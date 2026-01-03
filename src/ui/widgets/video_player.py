@@ -76,10 +76,17 @@ class VideoPlayer(QWidget):
         self.overlay_widget.setStyleSheet("""
             QWidget#OverlayControls {
                 background-color: rgba(20, 20, 20, 0.90); 
-                border-top-left-radius: 12px;
-                border-top-right-radius: 12px;
+                border-top-left-radius: 15px;
+                border-top-right-radius: 15px;
+                border-bottom-left-radius: 15px;
+                border-bottom-right-radius: 15px;
             }
-            QLabel { color: #fff; font-weight: 600; font-family: "Segoe UI"; }
+            QLabel { 
+                color: #ffffff; 
+                font-weight: 600; 
+                font-family: "Segoe UI";
+                background: transparent; 
+            }
         """)
         
         # Opacity Effect for Fade

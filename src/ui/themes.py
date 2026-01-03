@@ -28,7 +28,8 @@ class ThemeManager:
             border: none;
             background: #2b2b2b;
             width: 10px;
-            margin: 0px 0px 0px 0px;
+            margin: 0px;
+            border-radius: 5px;
         }
         QScrollBar::handle:vertical {
             background: #555;
@@ -43,25 +44,24 @@ class ThemeManager:
             background: none;
         }
 
-        /* COLLAPSIBLE BOX HEADER (Replaces GroupBox Title) */
+        /* COLLAPSIBLE BOX HEADER */
         QPushButton#CollapsibleHeader {
             background-color: #2d2d2d;
-            border: 1px solid #3e3e3e;
-            border-radius: 4px;
+            border: none; /* Removed Border for simpler look */
+            border-radius: 8px; /* Rounder */
             text-align: left;
-            padding: 8px 10px;
+            padding: 10px 15px;
             font-weight: bold;
-            color: #43a047; /* Green Accent */
+            color: #43a047; 
         }
         QPushButton#CollapsibleHeader:hover {
             background-color: #3e3e3e;
-            border-color: #43a047;
         }
         
-        /* GROUP BOX (Legacy fallback) */
+        /* GROUP BOX */
         QGroupBox {
             border: 1px solid #3e3e3e;
-            border-radius: 8px;
+            border-radius: 12px; /* Rounder */
             margin-top: 20px;
             font-weight: bold;
             background-color: #252526;
@@ -78,8 +78,8 @@ class ThemeManager:
         QPushButton {
             background-color: #333333;
             border: 1px solid #454545;
-            border-radius: 6px;
-            padding: 6px 12px;
+            border-radius: 8px; /* Rounder */
+            padding: 8px 16px;
             color: #ffffff;
         }
         QPushButton:hover {
@@ -95,16 +95,17 @@ class ThemeManager:
             border-color: #333;
         }
 
-        /* COMBO BOX - Modern Web Style */
+        /* COMBO BOX - Simpler, Flat */
         QComboBox {
             background-color: #2d2d2d;
-            border: 1px solid #3e3e3e;
-            border-radius: 4px;
-            padding: 5px 10px;
+            border: none; /* No border by default */
+            border-radius: 8px;
+            padding: 8px 15px;
             min-height: 25px;
+            color: #eee;
         }
         QComboBox:hover {
-            border-color: #43a047;
+            background-color: #383838; /* Slight lighten on hover */
         }
         QComboBox::drop-down {
             border: none;
@@ -112,28 +113,42 @@ class ThemeManager:
         }
         QComboBox::down-arrow {
             image: none;
+            border: none; 
+            /* Simple CSS Arrow or use image? CSS Arrow is fine */
+            width: 0; 
+            height: 0; 
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
-            border-top: 5px solid #e0e0e0;
-            margin-right: 10px;
+            border-top: 5px solid #aaa;
+            margin-right: 15px;
         }
         QComboBox QAbstractItemView {
-            background-color: #2d2d2d;
+            background-color: #252526;
             border: 1px solid #3e3e3e;
             selection-background-color: #43a047;
+            selection-color: #ffffff;
             outline: none;
+            border-radius: 8px;
+            padding: 4px;
         }
         QComboBox QAbstractItemView::item {
             padding: 8px 10px;
             min-height: 25px;
+            border-radius: 4px; /* Soft roundness for items */
+            margin: 2px; /* Spacing between items */
         }
         QComboBox QAbstractItemView::item:hover {
-            background-color: #3e3e3e;
+            background-color: #3e3e3e; /* Distinct hover color */
+            color: #ffffff;
+        }
+        QComboBox QAbstractItemView::item:selected {
+            background-color: #43a047; /* Selected item color */
+            color: #ffffff;
         }
 
         /* SLIDERS */
         QSlider {
-            min-height: 24px; /* Ensure space for handle */
+            min-height: 24px; 
         }
         QSlider::groove:horizontal {
             background: #2b2b2b;
@@ -147,13 +162,14 @@ class ThemeManager:
         QSlider::handle:horizontal {
             background: #ffffff;
             border: 1px solid #43a047;
-            width: 16px;
-            height: 16px;
-            margin: -5px 0; /* Center vertically */
-            border-radius: 8px;
+            width: 18px; /* Slightly larger thumb */
+            height: 18px;
+            margin: -6px 0; 
+            border-radius: 9px; /* Round */
         }
         QSlider::handle:horizontal:hover {
             background: #e8f5e9;
+            transform: scale(1.1); /* Transformation not supported in QSS directly usually, but logic exists elsewhere maybe */
         }
 
         /* LABELS & OTHERS */
@@ -163,18 +179,17 @@ class ThemeManager:
         QLineEdit {
             background-color: #333;
             border: 1px solid #454545;
-            border-radius: 4px;
-            padding: 4px;
+            border-radius: 8px;
+            padding: 8px;
             color: #fff;
         }
         
         /* HIGHLIGHTS / ACCENTS */
-        /* Make the title label in control panel pop */
         QLabel#ControlPanelTitle {
             font-size: 18px;
             color: #ffffff;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         /* Toolbar Title */
@@ -189,7 +204,7 @@ class ThemeManager:
         QLabel#VideoDisplay {
             background-color: #000000;
             border: 1px solid #333;
-            border-radius: 4px;
+            border-radius: 12px;
         }
         """
 
@@ -207,22 +222,21 @@ class ThemeManager:
          /* COLLAPSIBLE BOX HEADER */
         QPushButton#CollapsibleHeader {
             background-color: #ffffff;
-            border: 1px solid #d4d4d4;
-            border-radius: 4px;
+            border: none;
+            border-radius: 8px;
             text-align: left;
-            padding: 8px 10px;
+            padding: 10px 15px;
             font-weight: bold;
             color: #2e7d32; 
         }
         QPushButton#CollapsibleHeader:hover {
-            background-color: #f9f9f9;
-            border-color: #2e7d32;
+            background-color: #f0f0f0;
         }
 
         /* GROUP BOX */
         QGroupBox {
             border: 1px solid #d4d4d4;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-top: 20px;
             font-weight: bold;
             background-color: #ffffff;
@@ -235,8 +249,8 @@ class ThemeManager:
         QPushButton {
             background-color: #ffffff;
             border: 1px solid #c0c0c0;
-            border-radius: 6px;
-            padding: 6px 12px;
+            border-radius: 8px;
+            padding: 8px 16px;
             color: #333;
         }
         QPushButton:hover {
@@ -250,29 +264,34 @@ class ThemeManager:
         /* COMBO BOX */
         QComboBox {
             background-color: #ffffff;
-            border: 1px solid #d4d4d4;
-            border-radius: 4px;
-            padding: 5px 10px;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
             min-height: 25px;
+            color: #333;
         }
         QComboBox:hover {
-            border-color: #43a047;
+            background-color: #e0e0e0;
         }
         QComboBox::drop-down {
             border: none;
             width: 30px;
         }
         QComboBox::down-arrow {
+            border: none;
+            width: 0; 
+            height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
             border-top: 5px solid #555;
-            margin-right: 10px;
+            margin-right: 15px;
         }
         QComboBox QAbstractItemView {
             background-color: #ffffff;
             selection-background-color: #43a047;
             border: 1px solid #d4d4d4;
             outline: none;
+            border-radius: 8px;
         }
 
         /* SLIDERS */
@@ -291,10 +310,10 @@ class ThemeManager:
         QSlider::handle:horizontal {
             background: #ffffff;
             border: 1px solid #43a047;
-            width: 16px;
-            height: 16px;
-            margin: -5px 0;
-            border-radius: 8px;
+            width: 18px;
+            height: 18px;
+            margin: -6px 0;
+            border-radius: 9px;
         }
 
         /* LABELS */
@@ -306,7 +325,7 @@ class ThemeManager:
             font-size: 18px;
             color: #111;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         /* Toolbar Title */

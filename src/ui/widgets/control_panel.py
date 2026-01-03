@@ -28,7 +28,7 @@ class ControlPanel(QWidget):
         # File Selection (Always visible)
         self.file_label = QLabel("No file selected")
         self.file_label.setWordWrap(True)
-        self.file_label.setStyleSheet("border: 1px solid #555; padding: 5px;")
+        self.file_label.setStyleSheet("border: 1px solid #555; padding: 5px; border-radius: 6px;") # Matches rounded theme
         btn_file = QPushButton("Select Video")
         btn_file.clicked.connect(self.select_file)
         layout.addWidget(btn_file)
