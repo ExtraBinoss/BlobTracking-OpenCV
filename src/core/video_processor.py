@@ -201,7 +201,7 @@ class VideoProcessor(QThread):
                 else:
                     out_frame = debug_img
             else:
-                out_frame = visualizer.draw(frame, objects, shape=self.shape_type)
+                out_frame = visualizer.draw(frame, objects, shape_type=self.shape_type)
 
             # Convert for Qt (BGR -> RGB)
             rgb_image = cv2.cvtColor(out_frame, cv2.COLOR_BGR2RGB)

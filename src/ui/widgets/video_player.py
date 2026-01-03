@@ -72,36 +72,18 @@ class VideoPlayer(QWidget):
         self.ambient_label.setScaledContents(True) # Hardware/Qt scaling of pixmap
         self.video_layout.addWidget(self.ambient_label, 0, 0)
 
-        # Layer 1: Big Select Button (Visible when empty)
-        self.big_select_btn = QPushButton("Select Video File")
-        self.big_select_btn.setObjectName("BigSelectButton")
-        self.big_select_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.big_select_btn.setStyleSheet("""
-            QPushButton#BigSelectButton {
-                font-size: 24px;
-                font-weight: bold;
-                color: #66bb6a;
-                background-color: transparent;
-                border: 2px dashed #43a047;
-                border-radius: 20px;
-                padding: 40px;
-            }
-            QPushButton#BigSelectButton:hover {
-                background-color: rgba(67, 160, 71, 0.1);
-                border-style: solid;
-            }
-        """)
-        self.big_select_btn.clicked.connect(self.file_selection_requested)
-        # Add to grid but with margins so it doesn't touch edges
-        self.video_layout.addWidget(self.big_select_btn, 0, 0, Qt.AlignmentFlag.AlignCenter)
+        # Placeholder Container (Center Aligned)
+        self.placeholder_widget = QWidget()
+        self.placeholder_layout = QVBoxLayout(self.placeholder_widget)
+        self.placeholder_layout.setContentsMargins(0, 0, 0, 0)
+        self.placeholder_layout.setSpacing(20) # Space between text and button
+        self.placeholder_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Layer 2: Video Display / Status Label (Top Layer)
+        # Layer 1: Status Label (Top)
         self.image_label = QLabel("No Video Loaded")
         self.image_label.setObjectName("VideoDisplay")
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
-        # Make it transparent to mouse so we can click the button behind it
-        self.image_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        # self.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored) # conflict with VBox
         self.image_label.setStyleSheet("""
             QLabel#VideoDisplay {
                 color: rgba(255, 255, 255, 0.6);
@@ -110,7 +92,33 @@ class VideoPlayer(QWidget):
                 letter-spacing: 1px;
             }
         """)
-        self.video_layout.addWidget(self.image_label, 0, 0)
+        self.placeholder_layout.addWidget(self.image_label)
+
+        # Layer 2: Big Select Button (Bottom)
+        self.big_select_btn = QPushButton("Select Video File")
+        self.big_select_btn.setObjectName("BigSelectButton")
+        self.big_select_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.big_select_btn.setFixedWidth(280) # Fixed width looks better in column
+        self.big_select_btn.setStyleSheet("""
+            QPushButton#BigSelectButton {
+                font-size: 18px; 
+                font-weight: bold;
+                color: #66bb6a;
+                background-color: transparent;
+                border: 2px dashed #43a047;
+                border-radius: 15px;
+                padding: 20px;
+            }
+            QPushButton#BigSelectButton:hover {
+                background-color: rgba(67, 160, 71, 0.1);
+                border-style: solid;
+            }
+        """)
+        self.big_select_btn.clicked.connect(self.file_selection_requested)
+        self.placeholder_layout.addWidget(self.big_select_btn)
+
+        # Add Placeholder Container to Grid (Centered)
+        self.video_layout.addWidget(self.placeholder_widget, 0, 0, Qt.AlignmentFlag.AlignCenter)
 
         # OVERLAY CONTROLS
         self.overlay_widget = QWidget(self.video_container)
