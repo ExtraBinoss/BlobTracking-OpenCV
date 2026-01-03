@@ -43,7 +43,22 @@ class ThemeManager:
             background: none;
         }
 
-        /* GROUP BOX */
+        /* COLLAPSIBLE BOX HEADER (Replaces GroupBox Title) */
+        QPushButton#CollapsibleHeader {
+            background-color: #2d2d2d;
+            border: 1px solid #3e3e3e;
+            border-radius: 4px;
+            text-align: left;
+            padding: 8px 10px;
+            font-weight: bold;
+            color: #43a047; /* Green Accent */
+        }
+        QPushButton#CollapsibleHeader:hover {
+            background-color: #3e3e3e;
+            border-color: #43a047;
+        }
+        
+        /* GROUP BOX (Legacy fallback) */
         QGroupBox {
             border: 1px solid #3e3e3e;
             border-radius: 8px;
@@ -56,7 +71,7 @@ class ThemeManager:
             subcontrol-position: top left;
             padding: 0 5px;
             left: 10px;
-            color: #4facfe; 
+            color: #66bb6a; 
         }
 
         /* BUTTONS */
@@ -69,7 +84,7 @@ class ThemeManager:
         }
         QPushButton:hover {
             background-color: #3e3e3e;
-            border-color: #0078d4;
+            border-color: #43a047;
         }
         QPushButton:pressed {
             background-color: #1f1f1f;
@@ -89,7 +104,7 @@ class ThemeManager:
             min-height: 25px;
         }
         QComboBox:hover {
-            border-color: #0078d4;
+            border-color: #43a047;
         }
         QComboBox::drop-down {
             border: none;
@@ -105,7 +120,7 @@ class ThemeManager:
         QComboBox QAbstractItemView {
             background-color: #2d2d2d;
             border: 1px solid #3e3e3e;
-            selection-background-color: #0078d4;
+            selection-background-color: #43a047;
             outline: none;
         }
         QComboBox QAbstractItemView::item {
@@ -126,19 +141,19 @@ class ThemeManager:
             border-radius: 3px;
         }
         QSlider::sub-page:horizontal {
-            background: #0078d4;
+            background: #43a047;
             border-radius: 3px;
         }
         QSlider::handle:horizontal {
             background: #ffffff;
-            border: 1px solid #0078d4;
+            border: 1px solid #43a047;
             width: 16px;
             height: 16px;
             margin: -5px 0; /* Center vertically */
             border-radius: 8px;
         }
         QSlider::handle:horizontal:hover {
-            background: #f0f0f0;
+            background: #e8f5e9;
         }
 
         /* LABELS & OTHERS */
@@ -166,7 +181,7 @@ class ThemeManager:
         QLabel#ToolbarTitle {
             font-size: 20px;
             font-weight: bold;
-            color: #4facfe;
+            color: #66bb6a;
             padding: 0 10px;
         }
         
@@ -188,6 +203,21 @@ class ThemeManager:
             font-family: "Segoe UI", "Roboto", sans-serif;
             font-size: 14px;
         }
+        
+         /* COLLAPSIBLE BOX HEADER */
+        QPushButton#CollapsibleHeader {
+            background-color: #ffffff;
+            border: 1px solid #d4d4d4;
+            border-radius: 4px;
+            text-align: left;
+            padding: 8px 10px;
+            font-weight: bold;
+            color: #2e7d32; 
+        }
+        QPushButton#CollapsibleHeader:hover {
+            background-color: #f9f9f9;
+            border-color: #2e7d32;
+        }
 
         /* GROUP BOX */
         QGroupBox {
@@ -198,7 +228,7 @@ class ThemeManager:
             background-color: #ffffff;
         }
         QGroupBox::title {
-            color: #0078d4;
+            color: #2e7d32;
         }
 
         /* BUTTONS */
@@ -211,7 +241,7 @@ class ThemeManager:
         }
         QPushButton:hover {
             background-color: #f9f9f9;
-            border-color: #0078d4;
+            border-color: #43a047;
         }
         QPushButton:pressed {
             background-color: #e6e6e6;
@@ -226,7 +256,7 @@ class ThemeManager:
             min-height: 25px;
         }
         QComboBox:hover {
-            border-color: #0078d4;
+            border-color: #43a047;
         }
         QComboBox::drop-down {
             border: none;
@@ -240,7 +270,7 @@ class ThemeManager:
         }
         QComboBox QAbstractItemView {
             background-color: #ffffff;
-            selection-background-color: #0078d4;
+            selection-background-color: #43a047;
             border: 1px solid #d4d4d4;
             outline: none;
         }
@@ -255,12 +285,12 @@ class ThemeManager:
             border-radius: 3px;
         }
         QSlider::sub-page:horizontal {
-            background: #0078d4;
+            background: #43a047;
             border-radius: 3px;
         }
         QSlider::handle:horizontal {
             background: #ffffff;
-            border: 1px solid #0078d4;
+            border: 1px solid #43a047;
             width: 16px;
             height: 16px;
             margin: -5px 0;
@@ -283,7 +313,7 @@ class ThemeManager:
         QLabel#ToolbarTitle {
             font-size: 20px;
             font-weight: bold;
-            color: #0078d4;
+            color: #2e7d32;
             padding: 0 10px;
         }
         """

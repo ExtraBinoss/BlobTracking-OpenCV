@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QComboBox,
                              QScrollArea, QCheckBox, QColorDialog)
 from PyQt6.QtCore import Qt, pyqtSignal
 from src.core.enums import DetectionMode, VisualStyle
+from src.ui.widgets.collapsible_box import CollapsibleBox
 
 class ControlPanel(QWidget):
     params_changed = pyqtSignal(dict)
@@ -22,9 +23,9 @@ class ControlPanel(QWidget):
         scroll.setWidgetResizable(True)
         content = QWidget()
         layout = QVBoxLayout(content)
+        layout.setContentsMargins(10, 10, 10, 10) # Add margins inside scroll
 
-        # File Selection
-        layout.addStretch() # Top stretch for vertical centering
+        # File Selection (Always visible)
         self.file_label = QLabel("No file selected")
         self.file_label.setWordWrap(True)
         self.file_label.setStyleSheet("border: 1px solid #555; padding: 5px;")
@@ -34,59 +35,51 @@ class ControlPanel(QWidget):
         layout.addWidget(self.file_label)
         layout.addWidget(QLabel("<hr>"))
 
-        # Visual Config
-        vis_box = QGroupBox("Visual Style")
+        # Visual Config Box
+        self.vis_box = CollapsibleBox("Visual Settings")
         vis_lay = QVBoxLayout()
         vis_lay.addWidget(QLabel("Shape:"))
         self.shape_combo = QComboBox()
-        # Use Enums
         self.shape_combo.addItems([e.value for e in VisualStyle])
         self.shape_combo.currentTextChanged.connect(lambda t: self.shape_changed.emit(t))
         vis_lay.addWidget(self.shape_combo)
-        vis_box.setLayout(vis_lay)
-        layout.addWidget(vis_box)
+        self.vis_box.content_layout.addLayout(vis_lay)
+        layout.addWidget(self.vis_box)
         
-        # Debug View Toggle REMOVED (Moved to VideoPlayer)
-
-        # Detection Mode
-        mode_box = QGroupBox("Detection Mode")
+        # Detection Mode Box
+        self.detect_box = CollapsibleBox("Detection Settings")
+        
+        # Mode Selection
         mode_lay = QVBoxLayout()
+        mode_lay.addWidget(QLabel("Mode:"))
         self.mode_combo = QComboBox()
         self.mode_combo.addItems([e.value for e in DetectionMode])
-        self.mode_combo.setCurrentText(DetectionMode.EDGES.value) # Default to Edges
+        self.mode_combo.setCurrentText(DetectionMode.EDGES.value)
         self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
         mode_lay.addWidget(self.mode_combo)
-        mode_box.setLayout(mode_lay)
-        layout.addWidget(mode_box)
+        mode_lay.addWidget(QLabel("<hr>"))
+        self.detect_box.content_layout.addLayout(mode_lay)
 
-        # Shared Settings
-        shared_box = QGroupBox("General Filters")
-        shared_lay = QVBoxLayout()
-        self.blur_slider = self.create_slider("Blur", 0, 20, 0, shared_lay)
-        self.dilate_slider = self.create_slider("Dilation", 0, 20, 0, shared_lay)
-        self.min_area_slider = self.create_slider("Min Area", 10, 10000, 100, shared_lay)
-        self.max_area_slider = self.create_slider("Max Area", 100, 100000, 50000, shared_lay)
-        shared_box.setLayout(shared_lay)
-        layout.addWidget(shared_box)
-
-        # Mode Specific: Grayscale
-        self.gray_group = QGroupBox("Grayscale Settings")
-        gray_lay = QVBoxLayout()
+        # Mode Specific Settings (Added to Detect Box)
+        # 1. Grayscale
+        self.gray_widget = QWidget()
+        gray_lay = QVBoxLayout(self.gray_widget)
+        gray_lay.setContentsMargins(0,0,0,0)
         self.thresh_slider = self.create_slider("Threshold", 0, 255, 127, gray_lay)
-        self.gray_group.setLayout(gray_lay)
-        layout.addWidget(self.gray_group)
+        self.detect_box.add_widget(self.gray_widget)
 
-        # Mode Specific: Edges
-        self.edge_group = QGroupBox("Edge (Canny) Settings")
-        edge_lay = QVBoxLayout()
+        # 2. Edges
+        self.edge_widget = QWidget()
+        edge_lay = QVBoxLayout(self.edge_widget)
+        edge_lay.setContentsMargins(0,0,0,0)
         self.canny_low_slider = self.create_slider("Low Threshold", 0, 255, 50, edge_lay)
         self.canny_high_slider = self.create_slider("High Threshold", 0, 255, 150, edge_lay)
-        self.edge_group.setLayout(edge_lay)
-        layout.addWidget(self.edge_group)
+        self.detect_box.add_widget(self.edge_widget)
 
-        # Mode Specific: Color
-        self.color_group = QGroupBox("Color (HSV) Settings")
-        color_lay = QVBoxLayout()
+        # 3. Color
+        self.color_widget = QWidget()
+        color_lay = QVBoxLayout(self.color_widget)
+        color_lay.setContentsMargins(0,0,0,0)
         self.pick_color_btn = QPushButton("Pick Color & Auto-Set Range")
         self.pick_color_btn.clicked.connect(self.open_color_picker)
         color_lay.addWidget(self.pick_color_btn)
@@ -97,20 +90,23 @@ class ControlPanel(QWidget):
         self.s_max_slider = self.create_slider("Sat Max", 0, 255, 255, color_lay)
         self.v_min_slider = self.create_slider("Val Min", 0, 255, 0, color_lay)
         self.v_max_slider = self.create_slider("Val Max", 0, 255, 255, color_lay)
-        self.color_group.setLayout(color_lay)
-        layout.addWidget(self.color_group)
+        self.detect_box.add_widget(self.color_widget)
+        
+        layout.addWidget(self.detect_box)
+
+        # General Filters Box
+        self.filter_box = CollapsibleBox("General Filters")
+        self.blur_slider = self.create_slider("Blur", 0, 20, 0, self.filter_box.content_layout)
+        self.dilate_slider = self.create_slider("Dilation", 0, 20, 0, self.filter_box.content_layout)
+        self.min_area_slider = self.create_slider("Min Area", 10, 10000, 100, self.filter_box.content_layout)
+        self.max_area_slider = self.create_slider("Max Area", 100, 100000, 50000, self.filter_box.content_layout)
+        layout.addWidget(self.filter_box)
 
         # Export Button
-        # Removed addStretch to allow top alignment if outer layout handles it, 
-        # or keep it if we want buttons at bottom. 
-        # User complained about "not put on the middle". 
-        # Using a centered layout in MainWindow is better, so we'll just let this fill naturally.
-        # But commonly we want control contents at top.
         layout.addStretch() 
-
         self.export_btn = QPushButton("Export Video")
         self.export_btn.clicked.connect(self.export_requested)
-        self.export_btn.setStyleSheet("background-color: #4CAF50; color: white; padding: 10px;")
+        self.export_btn.setStyleSheet("background-color: #2e7d32; color: white; padding: 10px;") # Updated to Green
         self.export_btn.setEnabled(False)
         layout.addWidget(self.export_btn)
         
@@ -118,33 +114,48 @@ class ControlPanel(QWidget):
         scroll.setWidget(content)
         main_layout.addWidget(scroll)
         
+        # Expand meaningful sections by default
+        self.detect_box.expand()
+        self.vis_box.collapse()
+        self.filter_box.collapse()
+
         # Initialize visibility based on default
         self.on_mode_changed(self.mode_combo.currentText())
 
     def create_slider(self, label_text, min_val, max_val, default, parent_layout):
         container = QWidget()
-        lay = QHBoxLayout(container)
-        lay.setContentsMargins(0, 2, 0, 2)
-        lay.setSpacing(8)
+        lay = QVBoxLayout(container) # Vertical layout for safer resizing
+        lay.setContentsMargins(0, 5, 0, 5)
+        lay.setSpacing(2)
         
-        lbl = QLabel(f"{label_text}:")
-        lbl.setFixedWidth(80)
-        lay.addWidget(lbl)
+        # Top Row: Label ... Value
+        top_row = QWidget()
+        top_lay = QHBoxLayout(top_row)
+        top_lay.setContentsMargins(0, 0, 0, 0)
         
+        lbl = QLabel(label_text)
+        top_lay.addWidget(lbl)
+        
+        val_lbl = QLabel(str(default))
+        val_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        top_lay.addWidget(val_lbl)
+        
+        lay.addWidget(top_row)
+        
+        # Slider Row
         slider = QSlider(Qt.Orientation.Horizontal)
         slider.setRange(min_val, max_val)
         slider.setValue(default)
-        slider.setMinimumHeight(20)
-        slider.valueChanged.connect(lambda v, l=lbl, txt=label_text: l.setText(f"{txt}:"))
         slider.valueChanged.connect(self.emit_params)
-        lay.addWidget(slider, stretch=1)
-        
-        val_lbl = QLabel(str(default))
-        val_lbl.setFixedWidth(50)
         slider.valueChanged.connect(lambda v, vl=val_lbl: vl.setText(str(v)))
-        lay.addWidget(val_lbl)
+        lay.addWidget(slider)
         
-        parent_layout.addWidget(container)
+        if isinstance(parent_layout, QVBoxLayout) or isinstance(parent_layout, QHBoxLayout):
+            parent_layout.addWidget(container)
+        else:
+            # Fallback if parent_layout is some other layout manager or we need to add differently
+            parent_layout.addWidget(container)
+            
         return slider
 
     def get_params(self):
@@ -177,9 +188,9 @@ class ControlPanel(QWidget):
 
     def on_mode_changed(self, mode):
         # mode is string from combo
-        self.gray_group.setVisible(mode == DetectionMode.GRAYSCALE.value)
-        self.edge_group.setVisible(mode == DetectionMode.EDGES.value)
-        self.color_group.setVisible(mode == DetectionMode.COLOR.value)
+        self.gray_widget.setVisible(mode == DetectionMode.GRAYSCALE.value)
+        self.edge_widget.setVisible(mode == DetectionMode.EDGES.value)
+        self.color_widget.setVisible(mode == DetectionMode.COLOR.value)
         self.emit_params()
 
     def open_color_picker(self):
