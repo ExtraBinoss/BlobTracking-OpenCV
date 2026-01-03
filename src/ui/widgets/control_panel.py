@@ -24,7 +24,8 @@ class ControlPanel(QWidget):
 
         # Title
         title = QLabel("Blob Tracker Config")
-        title.setStyleSheet("font-size: 16px; font-weight: bold;")
+        title.setObjectName("ControlPanelTitle")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
         # File Selection
@@ -120,16 +121,17 @@ class ControlPanel(QWidget):
 
     def create_slider(self, label_text, min_val, max_val, default, parent_layout):
         container = QWidget()
-        lay = QHBoxLayout(container)
-        lay.setContentsMargins(0,0,0,0)
+        lay = QVBoxLayout(container) # Changed to Vertical
+        lay.setContentsMargins(0, 5, 0, 5)
+        lay.setSpacing(2)
         
         lbl = QLabel(f"{label_text}: {default}")
-        lbl.setMinimumWidth(100)
         lay.addWidget(lbl)
         
         slider = QSlider(Qt.Orientation.Horizontal)
         slider.setRange(min_val, max_val)
         slider.setValue(default)
+        slider.setMinimumHeight(20) # Ensure enough height for handle
         slider.valueChanged.connect(lambda v, l=lbl, txt=label_text: l.setText(f"{txt}: {v}"))
         slider.valueChanged.connect(self.emit_params)
         lay.addWidget(slider)

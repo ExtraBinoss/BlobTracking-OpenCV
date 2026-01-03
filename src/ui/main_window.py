@@ -118,12 +118,11 @@ class MainWindow(QMainWindow):
         self.apply_theme()
 
     def apply_theme(self):
-        app = QApplication.instance()
+        # We rely on ThemeManager to set stylesheets on the app instance
         if self.dark_mode:
-            app.setPalette(ThemeManager.get_dark_palette())
-            # Fix style sheet clashes for standard widgets if any
+            ThemeManager.apply_theme("dark")
         else:
-            app.setPalette(ThemeManager.get_light_palette())
+            ThemeManager.apply_theme("light")
             
     def keyPressEvent(self, event):
         # Global key handler if focus is elsewhere but we want spacebar to work?

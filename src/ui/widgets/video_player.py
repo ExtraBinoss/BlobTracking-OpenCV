@@ -20,11 +20,13 @@ class VideoPlayer(QWidget):
 
         # Video Display
         self.image_label = QLabel("No Video Loaded")
+        self.image_label.setObjectName("VideoDisplay")
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setStyleSheet("background-color: #000; color: #555;")
+        # Style sheet removed here, handled by Global Theme
+        # self.image_label.setStyleSheet("background-color: #000; color: #555;") 
         self.image_label.setSizePolicy(
-            QSizePolicy.Policy.Expanding, 
-            QSizePolicy.Policy.Expanding
+            QSizePolicy.Policy.Ignored, 
+            QSizePolicy.Policy.Ignored
         )
         layout.addWidget(self.image_label, stretch=1)
 
