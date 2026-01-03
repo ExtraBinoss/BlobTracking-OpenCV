@@ -22,12 +22,6 @@ class ControlPanel(QWidget):
         content = QWidget()
         layout = QVBoxLayout(content)
 
-        # Title
-        title = QLabel("BlobTrack")
-        title.setObjectName("ControlPanelTitle")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title)
-
         # File Selection
         self.file_label = QLabel("No file selected")
         self.file_label.setWordWrap(True)

@@ -161,6 +161,14 @@ class ThemeManager:
             font-weight: bold;
             margin-bottom: 10px;
         }
+
+        /* Toolbar Title */
+        QLabel#ToolbarTitle {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4facfe;
+            padding: 0 10px;
+        }
         
         /* Video Player Area */
         QLabel#VideoDisplay {
@@ -269,5 +277,13 @@ class ThemeManager:
             color: #111;
             font-weight: bold;
             margin-bottom: 10px;
+        }
+
+        /* Toolbar Title */
+        QLabel#ToolbarTitle {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0078d4;
+            padding: 0 10px;
         }
         """

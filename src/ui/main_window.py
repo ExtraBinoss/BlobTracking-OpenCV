@@ -1,5 +1,8 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QApplication, QPushButton
+import os # Added import
+from PyQt6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QToolBar, 
+                             QSizePolicy, QLabel) # Added QLabel
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction, QIcon # Added import
 from src.core.video_processor import VideoProcessor
 from src.ui.widgets.control_panel import ControlPanel
 from src.ui.widgets.video_player import VideoPlayer
@@ -49,15 +52,20 @@ class MainWindow(QMainWindow):
         toolbar.setMovable(False)
         self.addToolBar(toolbar)
 
+        # App Title in Toolbar
+        title_label = QLabel("  BlobTrack  ")
+        title_label.setObjectName("ToolbarTitle") 
+        toolbar.addWidget(title_label)
+
+        # Spacer (Before buttons)
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        toolbar.addWidget(spacer)
+
         # Theme Toggle
         theme_action = QAction("Toggle Theme", self)
         theme_action.triggered.connect(self.toggle_theme)
         toolbar.addAction(theme_action)
-        
-        # Spacer
-        dummy = QWidget()
-        dummy.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        toolbar.addWidget(dummy)
         
         # Exit Button
         exit_action = QAction("Exit", self)
