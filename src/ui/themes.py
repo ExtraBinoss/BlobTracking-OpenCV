@@ -80,26 +80,46 @@ class ThemeManager:
             border-color: #333;
         }
 
-        /* COMBO BOX */
+        /* COMBO BOX - Modern Web Style */
         QComboBox {
-            background-color: #333333;
-            border: 1px solid #454545;
-            border-radius: 6px;
-            padding: 5px;
+            background-color: #2d2d2d;
+            border: 1px solid #3e3e3e;
+            border-radius: 4px;
+            padding: 5px 10px;
+            min-height: 25px;
+        }
+        QComboBox:hover {
+            border-color: #0078d4;
         }
         QComboBox::drop-down {
-            subcontrol-origin: padding;
-            subcontrol-position: top right;
-            border-left-width: 0px;
-            width: 20px;
+            border: none;
+            width: 30px;
+        }
+        QComboBox::down-arrow {
+            image: none;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #e0e0e0;
+            margin-right: 10px;
         }
         QComboBox QAbstractItemView {
-            background-color: #252526;
+            background-color: #2d2d2d;
+            border: 1px solid #3e3e3e;
             selection-background-color: #0078d4;
-            border: 1px solid #454545;
+            outline: none;
+        }
+        QComboBox QAbstractItemView::item {
+            padding: 8px 10px;
+            min-height: 25px;
+        }
+        QComboBox QAbstractItemView::item:hover {
+            background-color: #3e3e3e;
         }
 
-        /* SLIDERS - Simplified for better cross-platform rendering */
+        /* SLIDERS */
+        QSlider {
+            min-height: 24px; /* Ensure space for handle */
+        }
         QSlider::groove:horizontal {
             background: #2b2b2b;
             height: 6px;
@@ -110,13 +130,15 @@ class ThemeManager:
             border-radius: 3px;
         }
         QSlider::handle:horizontal {
-            background: #0078d4;
-            width: 12px;
-            margin: -4px 0;
-            border-radius: 6px;
+            background: #ffffff;
+            border: 1px solid #0078d4;
+            width: 16px;
+            height: 16px;
+            margin: -5px 0; /* Center vertically */
+            border-radius: 8px;
         }
         QSlider::handle:horizontal:hover {
-            background: #4facfe;
+            background: #f0f0f0;
         }
 
         /* LABELS & OTHERS */
@@ -190,16 +212,35 @@ class ThemeManager:
         /* COMBO BOX */
         QComboBox {
             background-color: #ffffff;
-            border: 1px solid #c0c0c0;
-            border-radius: 6px;
-            padding: 5px;
+            border: 1px solid #d4d4d4;
+            border-radius: 4px;
+            padding: 5px 10px;
+            min-height: 25px;
+        }
+        QComboBox:hover {
+            border-color: #0078d4;
+        }
+        QComboBox::drop-down {
+            border: none;
+            width: 30px;
+        }
+        QComboBox::down-arrow {
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #555;
+            margin-right: 10px;
         }
         QComboBox QAbstractItemView {
             background-color: #ffffff;
             selection-background-color: #0078d4;
+            border: 1px solid #d4d4d4;
+            outline: none;
         }
 
         /* SLIDERS */
+        QSlider {
+            min-height: 24px;
+        }
         QSlider::groove:horizontal {
             background: #d4d4d4;
             height: 6px;
@@ -210,10 +251,12 @@ class ThemeManager:
             border-radius: 3px;
         }
         QSlider::handle:horizontal {
-            background: #0078d4;
-            width: 12px;
-            margin: -4px 0;
-            border-radius: 6px;
+            background: #ffffff;
+            border: 1px solid #0078d4;
+            width: 16px;
+            height: 16px;
+            margin: -5px 0;
+            border-radius: 8px;
         }
 
         /* LABELS */

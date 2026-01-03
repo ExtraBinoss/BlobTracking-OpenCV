@@ -23,7 +23,7 @@ class ControlPanel(QWidget):
         layout = QVBoxLayout(content)
 
         # Title
-        title = QLabel("Blob Tracker Config")
+        title = QLabel("BlobTrack")
         title.setObjectName("ControlPanelTitle")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
@@ -121,20 +121,26 @@ class ControlPanel(QWidget):
 
     def create_slider(self, label_text, min_val, max_val, default, parent_layout):
         container = QWidget()
-        lay = QVBoxLayout(container) # Changed to Vertical
-        lay.setContentsMargins(0, 5, 0, 5)
-        lay.setSpacing(2)
+        lay = QHBoxLayout(container)
+        lay.setContentsMargins(0, 2, 0, 2)
+        lay.setSpacing(8)
         
-        lbl = QLabel(f"{label_text}: {default}")
+        lbl = QLabel(f"{label_text}:")
+        lbl.setFixedWidth(80)
         lay.addWidget(lbl)
         
         slider = QSlider(Qt.Orientation.Horizontal)
         slider.setRange(min_val, max_val)
         slider.setValue(default)
-        slider.setMinimumHeight(20) # Ensure enough height for handle
-        slider.valueChanged.connect(lambda v, l=lbl, txt=label_text: l.setText(f"{txt}: {v}"))
+        slider.setMinimumHeight(20)
+        slider.valueChanged.connect(lambda v, l=lbl, txt=label_text: l.setText(f"{txt}:"))
         slider.valueChanged.connect(self.emit_params)
-        lay.addWidget(slider)
+        lay.addWidget(slider, stretch=1)
+        
+        val_lbl = QLabel(str(default))
+        val_lbl.setFixedWidth(50)
+        slider.valueChanged.connect(lambda v, vl=val_lbl: vl.setText(str(v)))
+        lay.addWidget(val_lbl)
         
         parent_layout.addWidget(container)
         return slider

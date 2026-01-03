@@ -41,9 +41,11 @@ class VideoPlayer(QWidget):
         # Timeline Slider
         self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setRange(0, 0)
-        self.slider.sliderPressed.connect(self.on_slider_pressed)
-        self.slider.sliderReleased.connect(self.on_slider_released)
-        self.slider.valueChanged.connect(self.on_slider_value_changed)
+        # Enable clicking anywhere on the slider to jump
+        self.slider.setMouseTracking(True)
+        self.slider.mousePressEvent = self.slider_mouse_press
+        self.slider.mouseMoveEvent = self.slider_mouse_move
+        self.slider.mouseReleaseEvent = self.slider_mouse_release
         controls_layout.addWidget(self.slider)
 
         self.time_label = QLabel("0:00 / 0:00")
@@ -81,20 +83,24 @@ class VideoPlayer(QWidget):
         self.is_playing = not self.is_playing
         self.play_btn.setText("Play" if not self.is_playing else "Pause")
 
-    def on_slider_pressed(self):
-        pass
+    def slider_mouse_press(self, event):
+        # Jump to clicked position
+        if event.button() == Qt.MouseButton.LeftButton:
+            value = self.slider.minimum() + (self.slider.maximum() - self.slider.minimum()) * event.position().x() / self.slider.width()
+            self.slider.setValue(int(value))
+            self.seek_requested.emit(int(value))
+            self.is_seeking = True
 
-    def on_slider_released(self):
-        # Seek on release
-        self.seek_requested.emit(self.slider.value())
+    def slider_mouse_move(self, event):
+        # Live seek while dragging
+        if hasattr(self, 'is_seeking') and self.is_seeking:
+            value = self.slider.minimum() + (self.slider.maximum() - self.slider.minimum()) * event.position().x() / self.slider.width()
+            value = max(self.slider.minimum(), min(self.slider.maximum(), int(value)))
+            self.slider.setValue(value)
+            self.seek_requested.emit(value)
 
-    def on_slider_value_changed(self, value):
-        # Optional: live seek if powerful enough, otherwise wait for release
-        # If user drags, we might want to seek immediately?
-        # Let's verify: `sliderDown()` logic handles the update block.
-        if self.slider.isSliderDown():
-            # self.seek_requested.emit(value) # Live seeking can be laggy
-            pass
+    def slider_mouse_release(self, event):
+        self.is_seeking = False
             
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Space:

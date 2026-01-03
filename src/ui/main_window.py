@@ -9,38 +9,62 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Blob Tracking Processor")
-        self.resize(1200, 800)
+        self.resize(1000, 700) # Adjusted size
         
         self.processor = None
         self.dark_mode = True
         
         self.init_ui()
-        self.apply_theme()
+        self.apply_theme() # Initial theme application moved here
 
     def init_ui(self):
+        # Set Window Icon
+        icon_path = os.path.join(os.getcwd(), "src", "assets", "logo_blobtrack.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+
+        # Main Layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QHBoxLayout(central_widget)
+        main_layout.setContentsMargins(10, 10, 10, 10)
+        main_layout.setSpacing(10)
 
-        # Widgets
+        # Control Panel
         self.control_panel = ControlPanel()
-        self.control_panel.setFixedWidth(380)
-        
+        main_layout.addWidget(self.control_panel, stretch=1)
+
+        # Video Player
         self.video_player = VideoPlayer()
+        main_layout.addWidget(self.video_player, stretch=3)
 
-        # Layout
-        main_layout.addWidget(self.control_panel)
-        main_layout.addWidget(self.video_player, stretch=1)
-        
-        # Theme Toggle (Floating or Top Bar? Placing in layout for now)
-        # We can add it to the top of control panel, but let's just make it a corner button or similar.
-        # Actually proper way: add a Menu Bar or Toolbar.
-        toolbar = self.addToolBar("Helpers")
-        
-        theme_action = toolbar.addAction("Toggle Theme")
+        # Toolbar
+        self.init_toolbar()
+
+        # Connect Signals
+        self.connect_signals()
+
+    def init_toolbar(self):
+        toolbar = QToolBar("Main Toolbar")
+        toolbar.setMovable(False)
+        self.addToolBar(toolbar)
+
+        # Theme Toggle
+        theme_action = QAction("Toggle Theme", self)
         theme_action.triggered.connect(self.toggle_theme)
+        toolbar.addAction(theme_action)
+        
+        # Spacer
+        dummy = QWidget()
+        dummy.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        toolbar.addWidget(dummy)
+        
+        # Exit Button
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.close)
+        toolbar.addAction(exit_action)
 
-        # Connections
+    def connect_signals(self):
         self.control_panel.file_selected.connect(self.start_preview)
         self.control_panel.params_changed.connect(self.update_processor_params)
         self.control_panel.debug_toggled.connect(self.toggle_debug)
