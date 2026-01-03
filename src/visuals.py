@@ -38,11 +38,13 @@ class VisualStateManager:
             
             self.traces[obj_id].appendleft(centroid)
 
+from src.core.enums import VisualStyle
+
 class Visualizer:
     def __init__(self, state_manager):
         self.state = state_manager
 
-    def draw(self, frame, objects, shape="square"):
+    def draw(self, frame, objects, shape=VisualStyle.SQUARE):
         # Update state first
         # objects now contains (x, y, radius)
         # We need to pass just {id: (x, y)} to state manager for trace tracking
@@ -70,12 +72,12 @@ class Visualizer:
                     cv2.line(frame, trace[i - 1], trace[i], color, thickness)
 
             # Draw Shape
-            if shape == "circle":
+            if shape == VisualStyle.CIRCLE:
                 cv2.circle(frame, (x, y), radius, color, 2)
                 # Outer glow effect (simple)
                 cv2.circle(overlay, (x, y), radius + 5, color, -1)
             else:
-                # Square
+                # Default to Square
                 top_left = (x - radius, y - radius)
                 bottom_right = (x + radius, y + radius)
                 cv2.rectangle(frame, top_left, bottom_right, color, 2)

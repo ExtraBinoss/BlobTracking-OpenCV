@@ -1,11 +1,12 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QSlider, 
-                             QHBoxLayout, QPushButton, QSizePolicy)
+                             QHBoxLayout, QPushButton, QSizePolicy, QButtonGroup)
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QPixmap, QImage
 
 class VideoPlayer(QWidget):
     toggle_play_requested = pyqtSignal()
     seek_requested = pyqtSignal(int)
+    debug_toggled = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -17,13 +18,63 @@ class VideoPlayer(QWidget):
     def init_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Top Bar (Debug View Toggle)
+        top_bar = QHBoxLayout()
+        top_bar.addStretch()
+        
+        # Toggle Switch (implemented as two checkable buttons)
+        self.view_group = QButtonGroup(self)
+        
+        self.btn_video = QPushButton("Video")
+        self.btn_video.setCheckable(True)
+        self.btn_video.setChecked(True)
+        self.btn_video.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        self.btn_debug = QPushButton("Debug")
+        self.btn_debug.setCheckable(True)
+        self.btn_debug.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        # Style for toggle look
+        toggle_style = """
+            QPushButton {
+                background-color: #333;
+                border: none;
+                padding: 5px 15px;
+                color: #888;
+            }
+            QPushButton:checked {
+                background-color: #555;
+                color: #fff;
+                font-weight: bold;
+            }
+            QPushButton:first-child {
+                border-top-left-radius: 4px;
+                border-bottom-left-radius: 4px;
+            }
+            QPushButton:last-child {
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+        """
+        self.btn_video.setStyleSheet(toggle_style)
+        self.btn_debug.setStyleSheet(toggle_style)
+
+        self.view_group.addButton(self.btn_video)
+        self.view_group.addButton(self.btn_debug)
+        
+        self.view_group.buttonClicked.connect(self.on_view_changed)
+        
+        top_bar.addWidget(self.btn_video)
+        top_bar.addWidget(self.btn_debug)
+        top_bar.addStretch()
+        
+        layout.addLayout(top_bar)
 
         # Video Display
         self.image_label = QLabel("No Video Loaded")
         self.image_label.setObjectName("VideoDisplay")
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # Style sheet removed here, handled by Global Theme
-        # self.image_label.setStyleSheet("background-color: #000; color: #555;") 
         self.image_label.setSizePolicy(
             QSizePolicy.Policy.Ignored, 
             QSizePolicy.Policy.Ignored
@@ -52,6 +103,10 @@ class VideoPlayer(QWidget):
         controls_layout.addWidget(self.time_label)
 
         layout.addLayout(controls_layout)
+
+    def on_view_changed(self, btn):
+        is_debug = (btn == self.btn_debug)
+        self.debug_toggled.emit(is_debug)
 
     def update_image(self, qimg):
         # Scale to fit label, keep aspect ratio

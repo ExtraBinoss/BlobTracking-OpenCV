@@ -2,12 +2,13 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QComboBox,
                              QSlider, QLabel, QPushButton, QFileDialog, QHBoxLayout,
                              QScrollArea, QCheckBox, QColorDialog)
 from PyQt6.QtCore import Qt, pyqtSignal
+from src.core.enums import DetectionMode, VisualStyle
 
 class ControlPanel(QWidget):
     params_changed = pyqtSignal(dict)
     file_selected = pyqtSignal(str)
     export_requested = pyqtSignal()
-    debug_toggled = pyqtSignal(bool)
+    debug_toggled = pyqtSignal(bool) # Keeping signal for now if useful, but button is moving
     shape_changed = pyqtSignal(str)
     
     def __init__(self):
@@ -23,6 +24,7 @@ class ControlPanel(QWidget):
         layout = QVBoxLayout(content)
 
         # File Selection
+        layout.addStretch() # Top stretch for vertical centering
         self.file_label = QLabel("No file selected")
         self.file_label.setWordWrap(True)
         self.file_label.setStyleSheet("border: 1px solid #555; padding: 5px;")
@@ -37,22 +39,21 @@ class ControlPanel(QWidget):
         vis_lay = QVBoxLayout()
         vis_lay.addWidget(QLabel("Shape:"))
         self.shape_combo = QComboBox()
-        self.shape_combo.addItems(["square", "circle"])
+        # Use Enums
+        self.shape_combo.addItems([e.value for e in VisualStyle])
         self.shape_combo.currentTextChanged.connect(lambda t: self.shape_changed.emit(t))
         vis_lay.addWidget(self.shape_combo)
         vis_box.setLayout(vis_lay)
         layout.addWidget(vis_box)
         
-        # Debug View Toggle
-        self.debug_cb = QCheckBox("Show Debug View (Mask/Edges)")
-        self.debug_cb.toggled.connect(lambda c: self.debug_toggled.emit(c))
-        layout.addWidget(self.debug_cb)
+        # Debug View Toggle REMOVED (Moved to VideoPlayer)
 
         # Detection Mode
         mode_box = QGroupBox("Detection Mode")
         mode_lay = QVBoxLayout()
         self.mode_combo = QComboBox()
-        self.mode_combo.addItems(["grayscale", "edges", "color"])
+        self.mode_combo.addItems([e.value for e in DetectionMode])
+        self.mode_combo.setCurrentText(DetectionMode.EDGES.value) # Default to Edges
         self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
         mode_lay.addWidget(self.mode_combo)
         mode_box.setLayout(mode_lay)
@@ -100,7 +101,13 @@ class ControlPanel(QWidget):
         layout.addWidget(self.color_group)
 
         # Export Button
-        layout.addStretch()
+        # Removed addStretch to allow top alignment if outer layout handles it, 
+        # or keep it if we want buttons at bottom. 
+        # User complained about "not put on the middle". 
+        # Using a centered layout in MainWindow is better, so we'll just let this fill naturally.
+        # But commonly we want control contents at top.
+        layout.addStretch() 
+
         self.export_btn = QPushButton("Export Video")
         self.export_btn.clicked.connect(self.export_requested)
         self.export_btn.setStyleSheet("background-color: #4CAF50; color: white; padding: 10px;")
@@ -111,7 +118,8 @@ class ControlPanel(QWidget):
         scroll.setWidget(content)
         main_layout.addWidget(scroll)
         
-        self.on_mode_changed("grayscale")
+        # Initialize visibility based on default
+        self.on_mode_changed(self.mode_combo.currentText())
 
     def create_slider(self, label_text, min_val, max_val, default, parent_layout):
         container = QWidget()
@@ -168,9 +176,10 @@ class ControlPanel(QWidget):
             self.file_selected.emit(fname)
 
     def on_mode_changed(self, mode):
-        self.gray_group.setVisible(mode == "grayscale")
-        self.edge_group.setVisible(mode == "edges")
-        self.color_group.setVisible(mode == "color")
+        # mode is string from combo
+        self.gray_group.setVisible(mode == DetectionMode.GRAYSCALE.value)
+        self.edge_group.setVisible(mode == DetectionMode.EDGES.value)
+        self.color_group.setVisible(mode == DetectionMode.COLOR.value)
         self.emit_params()
 
     def open_color_picker(self):

@@ -5,6 +5,7 @@ from PyQt6.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition
 from PyQt6.QtGui import QImage
 from src.tracking import BlobDetector, CentroidTracker
 from src.visuals import VisualStateManager, Visualizer
+from src.core.enums import DetectionMode
 
 class VideoProcessor(QThread):
     progress_update = pyqtSignal(int)
@@ -29,7 +30,7 @@ class VideoProcessor(QThread):
         self.params = {
             "min_area": 100, "max_area": 100000,
             "dilation": 0, "blur": 0, "threshold": 127,
-            "mode": "grayscale",
+            "mode": DetectionMode.EDGES.value, # Default now Edges
             "canny_low": 50, "canny_high": 150,
             "h_min": 0, "s_min": 0, "v_min": 0,
             "h_max": 179, "s_max": 255, "v_max": 255
@@ -106,17 +107,39 @@ class VideoProcessor(QThread):
                     break
 
             # Detection
-            rects, _, debug_thresh = self.detector.detect(frame)
-            
+            # Adjusted unpacking for new return signature
+            rects, _, detection_data = self.detector.detect(frame)
+            if isinstance(detection_data, tuple):
+                 # New Style: (thresh, debug_frames)
+                 thresh, debug_frames = detection_data
+            else:
+                 # Fallback just in case
+                 thresh = detection_data
+                 debug_frames = {}
+
             # Tracking
             objects = tracker.update(rects)
             
             # Prepare Output
             if self.is_preview and self.debug_mode:
-                if len(debug_thresh.shape) == 2:
-                    out_frame = cv2.cvtColor(debug_thresh, cv2.COLOR_GRAY2BGR)
+                # Show the most relevant debug frame
+                # If diluted exists, it's the final mask used for contours
+                if 'dilated' in debug_frames:
+                    debug_img = debug_frames['dilated']
+                elif 'color_mask' in debug_frames:
+                    debug_img = debug_frames['color_mask']
+                elif 'edges' in debug_frames:
+                     debug_img = debug_frames['edges']
+                elif 'threshold' in debug_frames:
+                     debug_img = debug_frames['threshold']
                 else:
-                    out_frame = debug_thresh
+                     debug_img = thresh
+                
+                # Ensure it is BGR for Consistency
+                if len(debug_img.shape) == 2:
+                    out_frame = cv2.cvtColor(debug_img, cv2.COLOR_GRAY2BGR)
+                else:
+                    out_frame = debug_img
             else:
                 out_frame = visualizer.draw(frame, objects, shape=self.shape_type)
 

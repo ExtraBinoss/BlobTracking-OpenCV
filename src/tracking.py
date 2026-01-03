@@ -81,6 +81,8 @@ class CentroidTracker:
 
         return self.objects
 
+from src.core.enums import DetectionMode
+
 class BlobDetector:
     def __init__(self):
         self.min_area = 100
@@ -88,7 +90,7 @@ class BlobDetector:
         self.dilation = 0
         self.blur = 0
         self.threshold = 127
-        self.mode = "grayscale" # grayscale, edges, color
+        self.mode = DetectionMode.GRAYSCALE
         
         # Edge Detection (Canny) params
         self.canny_low = 50
@@ -108,7 +110,16 @@ class BlobDetector:
         self.dilation = params.get("dilation", self.dilation)
         self.blur = params.get("blur", self.blur)
         self.threshold = params.get("threshold", self.threshold)
-        self.mode = params.get("mode", self.mode)
+        
+        mode_str = params.get("mode", self.mode)
+        # Ensure we set the Enum
+        if isinstance(mode_str, str):
+            try:
+                self.mode = DetectionMode(mode_str)
+            except ValueError:
+                self.mode = DetectionMode.GRAYSCALE
+        else:
+             self.mode = mode_str
         
         self.canny_low = params.get("canny_low", self.canny_low)
         self.canny_high = params.get("canny_high", self.canny_high)
@@ -121,13 +132,16 @@ class BlobDetector:
         self.v_max = params.get("v_max", self.v_max)
 
     def detect(self, frame):
+        debug_frames = {}
+        
         # 1. Grayscale / Pre-processing
-        if self.mode == "color":
+        if self.mode == DetectionMode.COLOR:
             # For color mode, we work in HSV
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             lower = np.array([self.h_min, self.s_min, self.v_min])
             upper = np.array([self.h_max, self.s_max, self.v_max])
             thresh = cv2.inRange(hsv, lower, upper)
+            debug_frames['color_mask'] = thresh
         else:
             # Grayscale for standard and edges
             if len(frame.shape) == 3:
@@ -138,18 +152,22 @@ class BlobDetector:
             # Blur (Grouping aid)
             k = 2 * self.blur + 1
             blurred = cv2.GaussianBlur(gray, (k, k), 0)
+            debug_frames['blurred'] = blurred
 
-            if self.mode == "edges":
+            if self.mode == DetectionMode.EDGES:
                 # Canny Edge Detection
                 thresh = cv2.Canny(blurred, self.canny_low, self.canny_high)
+                debug_frames['edges'] = thresh
             else:
                 # Standard Thresholding (Inverted)
                 _, thresh = cv2.threshold(blurred, self.threshold, 255, cv2.THRESH_BINARY_INV)
+                debug_frames['threshold'] = thresh
 
         # 4. Dilate (Grouping: expanding white regions to merge them)
         if self.dilation > 0:
             kernel = np.ones((self.dilation, self.dilation), np.uint8)
             thresh = cv2.dilate(thresh, kernel, iterations=1)
+            debug_frames['dilated'] = thresh
 
         # 5. Find Contours
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -174,5 +192,9 @@ class BlobDetector:
                 
                 keypoints.append(cv2.KeyPoint(float(cX), float(cY), 10.0))
              
-        return rects, keypoints, thresh # Return thresh for debug/preview
+        # Normalize what we return as the main "debug" frame for Simple use cases, 
+        # but also return the full dict.
+        # For compatibility with existing callers who might expect 3 args:
+        return rects, keypoints, (thresh, debug_frames)
+
 

@@ -75,12 +75,12 @@ class MainWindow(QMainWindow):
     def connect_signals(self):
         self.control_panel.file_selected.connect(self.start_preview)
         self.control_panel.params_changed.connect(self.update_processor_params)
-        self.control_panel.debug_toggled.connect(self.toggle_debug)
         self.control_panel.shape_changed.connect(self.update_shape)
         self.control_panel.export_requested.connect(self.start_export)
         
         self.video_player.toggle_play_requested.connect(self.toggle_video_pause)
         self.video_player.seek_requested.connect(self.seek_video)
+        self.video_player.debug_toggled.connect(self.toggle_debug)
 
     def start_preview(self, path):
         if self.processor:
