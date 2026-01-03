@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QSlider, 
                              QHBoxLayout, QPushButton, QSizePolicy, QButtonGroup,
-                             QGraphicsOpacityEffect)
+                             QGraphicsOpacityEffect, QGridLayout)
 from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QEvent, QSize
 from PyQt6.QtGui import QPixmap, QImage, QIcon, QPainter, QColor, QPainterPath
 
@@ -59,16 +59,26 @@ class VideoPlayer(QWidget):
         self.video_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.main_layout.addWidget(self.video_container)
         
-        self.video_layout = QVBoxLayout(self.video_container)
+        # Stacked Layout Logic: Grid or Stack? 
+        # Grid allows overlapping if we put everything in (0,0).
+        self.video_layout = QGridLayout(self.video_container)
         self.video_layout.setContentsMargins(0,0,0,0)
         self.video_layout.setSpacing(0)
         
-        # Video Label
+        # Layer 0: Ambient Background (Stretched)
+        self.ambient_label = QLabel()
+        self.ambient_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.ambient_label.setScaledContents(True) # Hardware/Qt scaling of pixmap
+        self.video_layout.addWidget(self.ambient_label, 0, 0)
+
+        # Layer 1: Video Display (Centered, Keep Aspect Ratio)
         self.image_label = QLabel("No Video Loaded")
         self.image_label.setObjectName("VideoDisplay")
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
-        self.video_layout.addWidget(self.image_label)
+        # We don't stretch this, we let it be centered.
+        # Ideally, we want it to fit inside the cell.
+        self.video_layout.addWidget(self.image_label, 0, 0)
 
         # OVERLAY CONTROLS
         self.overlay_widget = QWidget(self.video_container)
@@ -204,7 +214,18 @@ class VideoPlayer(QWidget):
         self.debug_toggled.emit(is_debug)
 
     def update_image(self, qimg):
-        # Scale to fit label, keep aspect ratio
+        # OPTIMIZED AMBIENT:
+        # 1. Scale to tiny size (fast transformation) -> cheap blur
+        # 2. Qt's setScaledContents(True) on label will handle upscaling to fillscreen cheaply.
+        
+        # Small size for ambient color averaging
+        small_size = QSize(20, 20) 
+        
+        # Using FastTransformation for downscaling is plenty good for amorphous ambient light
+        ambient = qimg.scaled(small_size, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.FastTransformation)
+        self.ambient_label.setPixmap(QPixmap.fromImage(ambient))
+        
+        # Normal Video Update
         if self.image_label.size().width() > 0 and self.image_label.size().height() > 0:
             scaled = qimg.scaled(self.image_label.size(), 
                                Qt.AspectRatioMode.KeepAspectRatio, 

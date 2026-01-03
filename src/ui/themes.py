@@ -122,6 +122,12 @@ class ThemeManager:
             border-top: 5px solid #aaa;
             margin-right: 15px;
         }
+        /* Fix for editable=True hack */
+        QComboBox QLineEdit {
+            border: none;
+            background: transparent;
+            color: #eee;
+        }
         QComboBox QAbstractItemView {
             background-color: #252526;
             border: 1px solid #3e3e3e;

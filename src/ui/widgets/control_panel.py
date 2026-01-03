@@ -1,9 +1,10 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QComboBox, 
                              QSlider, QLabel, QPushButton, QFileDialog, QHBoxLayout,
                              QScrollArea, QCheckBox, QColorDialog)
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QEvent
 from src.core.enums import DetectionMode, VisualStyle
 from src.ui.widgets.collapsible_box import CollapsibleBox
+from src.ui.widgets.custom_combo import ClickableComboBox
 
 class ControlPanel(QWidget):
     params_changed = pyqtSignal(dict)
@@ -39,7 +40,7 @@ class ControlPanel(QWidget):
         self.vis_box = CollapsibleBox("Visual Settings")
         vis_lay = QVBoxLayout()
         vis_lay.addWidget(QLabel("Shape:"))
-        self.shape_combo = QComboBox()
+        self.shape_combo = ClickableComboBox()
         self.shape_combo.addItems([e.value for e in VisualStyle])
         self.shape_combo.currentTextChanged.connect(lambda t: self.shape_changed.emit(t))
         vis_lay.addWidget(self.shape_combo)
@@ -52,7 +53,7 @@ class ControlPanel(QWidget):
         # Mode Selection
         mode_lay = QVBoxLayout()
         mode_lay.addWidget(QLabel("Mode:"))
-        self.mode_combo = QComboBox()
+        self.mode_combo = ClickableComboBox()
         self.mode_combo.addItems([e.value for e in DetectionMode])
         self.mode_combo.setCurrentText(DetectionMode.EDGES.value)
         self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
