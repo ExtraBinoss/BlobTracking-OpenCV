@@ -72,16 +72,7 @@ class VideoPlayer(QWidget):
         self.ambient_label.setScaledContents(True) # Hardware/Qt scaling of pixmap
         self.video_layout.addWidget(self.ambient_label, 0, 0)
 
-        # Layer 1: Video Display (Centered, Keep Aspect Ratio)
-        self.image_label = QLabel("No Video Loaded")
-        self.image_label.setObjectName("VideoDisplay")
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
-        # We don't stretch this, we let it be centered.
-        # Ideally, we want it to fit inside the cell.
-        self.video_layout.addWidget(self.image_label, 0, 0)
-
-        # Layer 2: Big Select Button (Visible when empty)
+        # Layer 1: Big Select Button (Visible when empty)
         self.big_select_btn = QPushButton("Select Video File")
         self.big_select_btn.setObjectName("BigSelectButton")
         self.big_select_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -103,6 +94,23 @@ class VideoPlayer(QWidget):
         self.big_select_btn.clicked.connect(self.file_selection_requested)
         # Add to grid but with margins so it doesn't touch edges
         self.video_layout.addWidget(self.big_select_btn, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+        # Layer 2: Video Display / Status Label (Top Layer)
+        self.image_label = QLabel("No Video Loaded")
+        self.image_label.setObjectName("VideoDisplay")
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        # Make it transparent to mouse so we can click the button behind it
+        self.image_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.image_label.setStyleSheet("""
+            QLabel#VideoDisplay {
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 18px;
+                font-weight: 500;
+                letter-spacing: 1px;
+            }
+        """)
+        self.video_layout.addWidget(self.image_label, 0, 0)
 
         # OVERLAY CONTROLS
         self.overlay_widget = QWidget(self.video_container)
