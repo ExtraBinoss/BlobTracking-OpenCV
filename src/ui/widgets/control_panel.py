@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QComboBox, 
                              QSlider, QLabel, QPushButton, QFileDialog, QHBoxLayout,
-                             QScrollArea, QCheckBox, QColorDialog)
+                             QScrollArea, QCheckBox, QColorDialog, QSpinBox)
 from PyQt6.QtCore import Qt, pyqtSignal, QEvent
 from src.core.enums import DetectionMode, VisualStyle
 from src.ui.widgets.collapsible_box import CollapsibleBox
@@ -10,8 +10,9 @@ class ControlPanel(QWidget):
     params_changed = pyqtSignal(dict)
     file_selected = pyqtSignal(str)
     export_requested = pyqtSignal()
-    debug_toggled = pyqtSignal(bool) # Keeping signal for now if useful, but button is moving
-    shape_changed = pyqtSignal(str)
+    debug_toggled = pyqtSignal(bool) 
+    shape_changed = pyqtSignal(str) # Legacy? Maybe keep for now
+    visuals_changed = pyqtSignal(dict) # New signal for modular visuals
     
     def __init__(self):
         super().__init__()
@@ -24,12 +25,12 @@ class ControlPanel(QWidget):
         scroll.setWidgetResizable(True)
         content = QWidget()
         layout = QVBoxLayout(content)
-        layout.setContentsMargins(10, 10, 10, 10) # Add margins inside scroll
+        layout.setContentsMargins(10, 10, 10, 10) 
 
         # File Selection (Always visible)
         self.file_label = QLabel("No file selected")
         self.file_label.setWordWrap(True)
-        self.file_label.setStyleSheet("border: 1px solid #555; padding: 5px; border-radius: 6px;") # Matches rounded theme
+        self.file_label.setStyleSheet("border: 1px solid #555; padding: 5px; border-radius: 6px;") 
         btn_file = QPushButton("Select Video")
         btn_file.clicked.connect(self.select_file)
         layout.addWidget(btn_file)
@@ -39,11 +40,48 @@ class ControlPanel(QWidget):
         # Visual Config Box
         self.vis_box = CollapsibleBox("Visual Settings")
         vis_lay = QVBoxLayout()
-        vis_lay.addWidget(QLabel("Shape:"))
+        
+        # Color Mode
+        vis_lay.addWidget(QLabel("Color Mode:"))
+        self.color_combo = ClickableComboBox()
+        self.color_combo.addItems(["White", "Rainbow", "Cycle"])
+        self.color_combo.currentTextChanged.connect(self.emit_visuals)
+        vis_lay.addWidget(self.color_combo)
+
+        # Text Mode
+        vis_lay.addWidget(QLabel("Text Mode:"))
+        self.text_combo = ClickableComboBox()
+        self.text_combo.addItems(["None", "Index", "Random Word"])
+        self.text_combo.currentTextChanged.connect(self.emit_visuals)
+        vis_lay.addWidget(self.text_combo)
+
+        # Shape Logic
+        vis_lay.addWidget(QLabel("Shape Style:"))
         self.shape_combo = ClickableComboBox()
         self.shape_combo.addItems([e.value for e in VisualStyle])
-        self.shape_combo.currentTextChanged.connect(lambda t: self.shape_changed.emit(t))
+        self.shape_combo.currentTextChanged.connect(self.emit_visuals) # Use new signal logic
         vis_lay.addWidget(self.shape_combo)
+        
+        # Fixed Size Toggle & Spinner
+        size_row = QHBoxLayout()
+        self.fixed_size_chk = QCheckBox("Fixed Size")
+        self.fixed_size_chk.toggled.connect(self.emit_visuals)
+        size_row.addWidget(self.fixed_size_chk)
+        
+        self.size_spin = QSpinBox()
+        self.size_spin.setRange(10, 500)
+        self.size_spin.setValue(50)
+        self.size_spin.setSuffix(" px")
+        self.size_spin.valueChanged.connect(self.emit_visuals)
+        size_row.addWidget(self.size_spin)
+        vis_lay.addLayout(size_row)
+
+        # Toggles
+        self.dot_chk = QCheckBox("Show Centroid Dot")
+        self.dot_chk.setChecked(True)
+        self.dot_chk.toggled.connect(self.emit_visuals)
+        vis_lay.addWidget(self.dot_chk)
+
         self.vis_box.content_layout.addLayout(vis_lay)
         layout.addWidget(self.vis_box)
         
@@ -176,6 +214,21 @@ class ControlPanel(QWidget):
             "v_min": self.v_min_slider.value(),
             "v_max": self.v_max_slider.value(),
         }
+
+    def get_visual_settings(self):
+        return {
+            "color_mode": self.color_combo.currentText(),
+            "text_mode": self.text_combo.currentText(),
+            "shape_style": self.shape_combo.currentText(),
+            "fixed_size_enabled": self.fixed_size_chk.isChecked(),
+            "fixed_size": self.size_spin.value(),
+            "show_dot": self.dot_chk.isChecked()
+        }
+
+    def emit_visuals(self):
+        self.visuals_changed.emit(self.get_visual_settings())
+        # Also emit basic shape for legacy listeners if needed
+        self.shape_changed.emit(self.shape_combo.currentText())
 
     def emit_params(self):
         self.params_changed.emit(self.get_params())

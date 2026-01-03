@@ -5,10 +5,14 @@ from PyQt6.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition
 from PyQt6.QtGui import QImage
 from src.tracking import BlobDetector, CentroidTracker
 from src.visuals import VisualStateManager, Visualizer
+from src.visuals.strategies import (
+    WhiteColorStrategy, RainbowColorStrategy, CycleColorStrategy,
+    TrackedShapeStrategy, FixedShapeStrategy,
+    NoTextStrategy, IndexTextStrategy, RandomWordStrategy
+)
 from src.core.enums import DetectionMode
 
 class VideoProcessor(QThread):
-    progress_update = pyqtSignal(int)
     progress_update = pyqtSignal(int)
     frame_update = pyqtSignal(QImage, QImage) # Main, Ambient
     finished = pyqtSignal(str)
@@ -37,6 +41,42 @@ class VideoProcessor(QThread):
             "h_max": 179, "s_max": 255, "v_max": 255
         }
         self.detector = BlobDetector()
+        
+        self.pending_visual_settings = None
+
+    def update_visuals(self, settings):
+        self.mutex.lock()
+        self.pending_visual_settings = settings
+        self.mutex.unlock()
+    
+    def _apply_visual_settings(self, visualizer, settings):
+        # Color
+        cm = settings.get("color_mode", "White")
+        if cm == "Rainbow":
+            visualizer.set_color_strategy(RainbowColorStrategy())
+        elif cm == "Cycle":
+            visualizer.set_color_strategy(CycleColorStrategy())
+        else:
+            visualizer.set_color_strategy(WhiteColorStrategy())
+            
+        # Text
+        tm = settings.get("text_mode", "Index")
+        if tm == "None":
+            visualizer.set_text_strategy(NoTextStrategy())
+        elif tm == "Random Word":
+            visualizer.set_text_strategy(RandomWordStrategy())
+        else:
+            visualizer.set_text_strategy(IndexTextStrategy())
+            
+        # Shape
+        fixed = settings.get("fixed_size_enabled", False)
+        if fixed:
+            visualizer.set_shape_strategy(FixedShapeStrategy())
+        else:
+            visualizer.set_shape_strategy(TrackedShapeStrategy())
+            
+        visualizer.fixed_size = settings.get("fixed_size", 50)
+        visualizer.show_center_dot = settings.get("show_dot", True)
 
     def update_params(self, params):
         self.params = params
@@ -129,6 +169,13 @@ class VideoProcessor(QThread):
                  # Fallback just in case
                  thresh = detection_data
                  debug_frames = {}
+
+            # Check for visual settings updates
+            self.mutex.lock()
+            if self.pending_visual_settings:
+                 self._apply_visual_settings(visualizer, self.pending_visual_settings)
+                 self.pending_visual_settings = None
+            self.mutex.unlock()
 
             # Tracking
             objects = tracker.update(rects)

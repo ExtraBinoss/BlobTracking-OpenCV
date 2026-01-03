@@ -8,6 +8,7 @@ class VideoPlayer(QWidget):
     toggle_play_requested = pyqtSignal()
     seek_requested = pyqtSignal(int)
     debug_toggled = pyqtSignal(bool)
+    file_selection_requested = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -80,6 +81,29 @@ class VideoPlayer(QWidget):
         # Ideally, we want it to fit inside the cell.
         self.video_layout.addWidget(self.image_label, 0, 0)
 
+        # Layer 2: Big Select Button (Visible when empty)
+        self.big_select_btn = QPushButton("Select Video File")
+        self.big_select_btn.setObjectName("BigSelectButton")
+        self.big_select_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.big_select_btn.setStyleSheet("""
+            QPushButton#BigSelectButton {
+                font-size: 24px;
+                font-weight: bold;
+                color: #66bb6a;
+                background-color: transparent;
+                border: 2px dashed #43a047;
+                border-radius: 20px;
+                padding: 40px;
+            }
+            QPushButton#BigSelectButton:hover {
+                background-color: rgba(67, 160, 71, 0.1);
+                border-style: solid;
+            }
+        """)
+        self.big_select_btn.clicked.connect(self.file_selection_requested)
+        # Add to grid but with margins so it doesn't touch edges
+        self.video_layout.addWidget(self.big_select_btn, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
         # OVERLAY CONTROLS
         self.overlay_widget = QWidget(self.video_container)
         self.overlay_widget.setObjectName("OverlayControls")
@@ -120,7 +144,7 @@ class VideoPlayer(QWidget):
         self.btn_video = QPushButton("Video")
         self.btn_video.setCheckable(True)
         self.btn_video.setChecked(True)
-        self.btn_debug = QPushButton("Debug")
+        self.btn_debug = QPushButton("Process")
         self.btn_debug.setCheckable(True)
         
         toggle_style = """
@@ -214,6 +238,10 @@ class VideoPlayer(QWidget):
         self.debug_toggled.emit(is_debug)
 
     def update_image(self, qimg, ambient_qimg):
+        # Hide Big Select Button if it's visible
+        if self.big_select_btn.isVisible():
+            self.big_select_btn.setVisible(False)
+
         # OPTIMIZED AMBIENT:
         # Pre-processed ambient frame (small, blurred, raw) is provided
         self.ambient_label.setPixmap(QPixmap.fromImage(ambient_qimg))

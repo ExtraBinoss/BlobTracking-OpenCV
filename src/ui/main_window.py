@@ -76,11 +76,13 @@ class MainWindow(QMainWindow):
         self.control_panel.file_selected.connect(self.start_preview)
         self.control_panel.params_changed.connect(self.update_processor_params)
         self.control_panel.shape_changed.connect(self.update_shape)
+        self.control_panel.visuals_changed.connect(self.update_visual_settings) # Connect new signal
         self.control_panel.export_requested.connect(self.start_export)
         
         self.video_player.toggle_play_requested.connect(self.toggle_video_pause)
         self.video_player.seek_requested.connect(self.seek_video)
         self.video_player.debug_toggled.connect(self.toggle_debug)
+        self.video_player.file_selection_requested.connect(self.control_panel.select_file)
 
     def start_preview(self, path):
         if self.processor:
@@ -96,12 +98,12 @@ class MainWindow(QMainWindow):
         self.processor.duration_changed.connect(self.video_player.set_duration)
         self.processor.current_frame_changed.connect(self.video_player.update_position)
         
-        # Init Params
+        # Init Params & Visuals
         self.update_processor_params(self.control_panel.get_params())
-        # Wait, emit_params returns nothing, it emits signal. We need `get_current_params` logic or just rely on signal.
-        # Let's fix ControlPanel to trigger initial emission or store state.
-        # Actually `ControlPanel.emit_params` emits the signal.
+        self.update_visual_settings(self.control_panel.get_visual_settings())
+        
         self.control_panel.emit_params() 
+        self.control_panel.emit_visuals() # Ensure visuals are synced
         
         self.processor.start()
         self.video_player.image_label.setText("Loading...")
@@ -118,6 +120,7 @@ class MainWindow(QMainWindow):
         self.processor = VideoProcessor(path, shape)
         self.processor.is_preview = False
         self.control_panel.emit_params()
+        self.control_panel.emit_visuals()
         
         self.processor.finished.connect(lambda msg: self.video_player.image_label.setText(msg))
         # We could add a progress dialog here.
@@ -129,11 +132,16 @@ class MainWindow(QMainWindow):
         if self.processor:
             self.processor.update_params(params)
 
+    def update_visual_settings(self, settings):
+        if self.processor:
+            self.processor.update_visuals(settings)
+
     def toggle_debug(self, enabled):
         if self.processor:
             self.processor.set_debug_mode(enabled)
 
     def update_shape(self, shape):
+        # Legacy/Redundant if visuals cover it, but keeping for safety
         if self.processor:
             self.processor.shape_type = shape
 
