@@ -213,17 +213,10 @@ class VideoPlayer(QWidget):
         is_debug = (btn == self.btn_debug)
         self.debug_toggled.emit(is_debug)
 
-    def update_image(self, qimg):
+    def update_image(self, qimg, ambient_qimg):
         # OPTIMIZED AMBIENT:
-        # 1. Scale to tiny size (fast transformation) -> cheap blur
-        # 2. Qt's setScaledContents(True) on label will handle upscaling to fillscreen cheaply.
-        
-        # Small size for ambient color averaging
-        small_size = QSize(20, 20) 
-        
-        # Using FastTransformation for downscaling is plenty good for amorphous ambient light
-        ambient = qimg.scaled(small_size, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.FastTransformation)
-        self.ambient_label.setPixmap(QPixmap.fromImage(ambient))
+        # Pre-processed ambient frame (small, blurred, raw) is provided
+        self.ambient_label.setPixmap(QPixmap.fromImage(ambient_qimg))
         
         # Normal Video Update
         if self.image_label.size().width() > 0 and self.image_label.size().height() > 0:

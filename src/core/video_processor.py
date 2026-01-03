@@ -9,7 +9,8 @@ from src.core.enums import DetectionMode
 
 class VideoProcessor(QThread):
     progress_update = pyqtSignal(int)
-    frame_update = pyqtSignal(QImage)
+    progress_update = pyqtSignal(int)
+    frame_update = pyqtSignal(QImage, QImage) # Main, Ambient
     finished = pyqtSignal(str)
     duration_changed = pyqtSignal(int) # Total frames
     current_frame_changed = pyqtSignal(int) # Current frame index
@@ -106,6 +107,18 @@ class VideoProcessor(QThread):
                 else:
                     break
 
+            # --- AMBIENT FRAME GENERATION (RAW) ---
+            # 1. Resize small (averaging)
+            # 2. Blur (smoothing)
+            # using RAW 'frame'
+            amb_small = cv2.resize(frame, (40, 22), interpolation=cv2.INTER_AREA)
+            amb_blurred = cv2.GaussianBlur(amb_small, (21, 21), 0)
+            amb_rgb = cv2.cvtColor(amb_blurred, cv2.COLOR_BGR2RGB)
+            ah, aw, ach = amb_rgb.shape
+            amb_bytes = ach * aw
+            qt_ambient = QImage(amb_rgb.data, aw, ah, amb_bytes, QImage.Format.Format_RGB888).copy()
+
+            # --- MAIN DETECTION & TRACKING ---
             # Detection
             # Adjusted unpacking for new return signature
             rects, _, detection_data = self.detector.detect(frame)
@@ -152,7 +165,7 @@ class VideoProcessor(QThread):
             # Fixes Segmentation Fault
             qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888).copy()
             
-            self.frame_update.emit(qt_image)
+            self.frame_update.emit(qt_image, qt_ambient)
             self.current_frame_changed.emit(frame_idx)
 
             if not self.is_preview and out:

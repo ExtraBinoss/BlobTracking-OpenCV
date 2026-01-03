@@ -208,7 +208,7 @@ class ThemeManager:
         
         /* Video Player Area */
         QLabel#VideoDisplay {
-            background-color: #000000;
+            background-color: transparent;
             border: 1px solid #333;
             border-radius: 12px;
         }
