@@ -45,6 +45,8 @@ class Visualizer:
         self.show_traces = True
         self.border_thickness = 2
         self.text_position = "Right" # Options: Right, Top, Center, Bottom
+        self.text_size = 14
+        self.text_color = (255, 255, 255)
 
     def set_color_strategy(self, strategy):
         self.color_strategy = strategy
@@ -117,6 +119,10 @@ class Visualizer:
 
             # Draw Text
             if text:
+                # Calculate font scale from text_size (approx conversion)
+                font_scale = self.text_size / 24.0  # 24 is baseline
+                thickness = max(1, int(self.text_size / 12))
+                
                 # Calculate position based on self.text_position
                 tx, ty = gx + gw + 5, gy + 10 # Default 'Right'
                 
@@ -129,12 +135,14 @@ class Visualizer:
                     ty = gy + gh + 20
                 elif tp == "center":
                     # Rough centering
-                    text_size, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
-                    tx = center[0] - text_size[0] // 2
-                    ty = center[1] + text_size[1] // 2
+                    text_dims, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
+                    tx = center[0] - text_dims[0] // 2
+                    ty = center[1] + text_dims[1] // 2
                 
+                # BGR color (cv2 uses BGR)
+                text_color_bgr = (self.text_color[2], self.text_color[1], self.text_color[0])
                 cv2.putText(frame, text, (tx, ty), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color_bgr, thickness)
 
         # Apply overlay
         if self.glow_enabled:

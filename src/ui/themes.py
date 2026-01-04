@@ -180,6 +180,7 @@ class ThemeManager:
         /* LABELS & OTHERS */
         QLabel {
             color: #d4d4d4;
+            background: transparent;
         }
         QLineEdit {
             background-color: #333;
@@ -324,6 +325,7 @@ class ThemeManager:
         /* LABELS */
         QLabel {
             color: #333;
+            background: transparent;
         }
         
         QLabel#ControlPanelTitle {

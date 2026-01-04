@@ -20,10 +20,67 @@ class RainbowColorStrategy(ColorStrategy):
         return tuple(int(c * 255) for c in rgb)
 
 class CycleColorStrategy(ColorStrategy):
+    def __init__(self, speed=50):
+        self.speed = speed
+    
     def get_color(self, object_id, frame_idx):
         # Cycle through colors over time
-        hue = (frame_idx * 0.01) % 1
+        hue = (frame_idx * (self.speed / 5000)) % 1
         rgb = colorsys.hsv_to_rgb(hue, 1.0, 1.0)
+        return tuple(int(c * 255) for c in rgb)
+
+class SolidColorStrategy(ColorStrategy):
+    def __init__(self, color=(255, 255, 255)):
+        self.color = color
+    
+    def get_color(self, object_id, frame_idx):
+        return self.color
+
+class BreatheColorStrategy(ColorStrategy):
+    def __init__(self, base_color=(67, 160, 71), speed=50, intensity=75):
+        self.base_color = base_color
+        self.speed = speed
+        self.intensity = intensity
+    
+    def get_color(self, object_id, frame_idx):
+        import math
+        # Pulsing brightness
+        factor = (math.sin(frame_idx * (self.speed / 500)) + 1) / 2  # 0 to 1
+        min_brightness = 1 - (self.intensity / 100)
+        brightness = min_brightness + factor * (1 - min_brightness)
+        return tuple(int(c * brightness) for c in self.base_color)
+
+class RippleColorStrategy(ColorStrategy):
+    def __init__(self, speed=50, intensity=75):
+        self.speed = speed
+        self.intensity = intensity
+    
+    def get_color(self, object_id, frame_idx):
+        import math
+        # Each object gets a phase offset based on ID
+        phase = (frame_idx * (self.speed / 500)) + (object_id * 0.5)
+        hue = (math.sin(phase) + 1) / 2
+        saturation = self.intensity / 100
+        rgb = colorsys.hsv_to_rgb(hue, saturation, 1.0)
+        return tuple(int(c * 255) for c in rgb)
+
+class FireworkColorStrategy(ColorStrategy):
+    def __init__(self, speed=50, intensity=75):
+        self.speed = speed
+        self.intensity = intensity
+        self.sparks = {}
+    
+    def get_color(self, object_id, frame_idx):
+        # Randomly "explode" with bright colors, then fade
+        if object_id not in self.sparks or frame_idx - self.sparks[object_id]['start'] > 30:
+            # New spark
+            hue = random.random()
+            self.sparks[object_id] = {'hue': hue, 'start': frame_idx}
+        
+        spark = self.sparks[object_id]
+        age = frame_idx - spark['start']
+        brightness = max(0, 1 - (age / 30))  # Fade out over 30 frames
+        rgb = colorsys.hsv_to_rgb(spark['hue'], 1.0, brightness)
         return tuple(int(c * 255) for c in rgb)
 
 # --- SHAPE STRATEGIES ---

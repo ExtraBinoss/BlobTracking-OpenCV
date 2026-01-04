@@ -1,9 +1,12 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QComboBox, 
                              QSlider, QLabel, QPushButton, QFileDialog, QHBoxLayout,
-                             QTabWidget, QCheckBox, QColorDialog, QSpinBox, QFormLayout)
+                             QTabWidget, QCheckBox, QColorDialog, QSpinBox, QFormLayout,
+                             QScrollArea)
 from PyQt6.QtCore import Qt, pyqtSignal
 from src.core.enums import DetectionMode, VisualStyle
 from src.ui.widgets.custom_combo import ClickableComboBox
+from src.ui.widgets.color_effect_widget import ColorEffectWidget
+from src.ui.widgets.text_style_widget import TextStyleWidget
 
 class ControlPanel(QWidget):
     params_changed = pyqtSignal(dict)
@@ -24,20 +27,29 @@ class ControlPanel(QWidget):
         self.tabs = QTabWidget()
         main_layout.addWidget(self.tabs)
         
-        # --- TAB 1: DETECTION ---
+        # --- TAB 1: DETECTION (with scroll) ---
+        self.tab_detect_scroll = QScrollArea()
+        self.tab_detect_scroll.setWidgetResizable(True)
         self.tab_detect = QWidget()
+        self.tab_detect_scroll.setWidget(self.tab_detect)
         self.init_detection_tab()
-        self.tabs.addTab(self.tab_detect, "Detection")
+        self.tabs.addTab(self.tab_detect_scroll, "Detection")
         
-        # --- TAB 2: VISUALS ---
+        # --- TAB 2: VISUALS (with scroll) ---
+        self.tab_visuals_scroll = QScrollArea()
+        self.tab_visuals_scroll.setWidgetResizable(True)
         self.tab_visuals = QWidget()
+        self.tab_visuals_scroll.setWidget(self.tab_visuals)
         self.init_visuals_tab()
-        self.tabs.addTab(self.tab_visuals, "Visuals")
+        self.tabs.addTab(self.tab_visuals_scroll, "Visuals")
         
-        # --- TAB 3: PROJECT ---
+        # --- TAB 3: PROJECT (with scroll) ---
+        self.tab_project_scroll = QScrollArea()
+        self.tab_project_scroll.setWidgetResizable(True)
         self.tab_project = QWidget()
+        self.tab_project_scroll.setWidget(self.tab_project)
         self.init_project_tab()
-        self.tabs.addTab(self.tab_project, "Project")
+        self.tabs.addTab(self.tab_project_scroll, "Project")
 
         # Initial State
         self.on_mode_changed(self.mode_combo.currentText())
@@ -75,22 +87,21 @@ class ControlPanel(QWidget):
         self.canny_high_slider = self.create_slider("High Threshold", 0, 255, 150, e_lay)
         dyn_lay.addWidget(self.edge_widget)
         
-        # Color Specs
-        self.color_widget = QWidget()
-        c_lay = QVBoxLayout(self.color_widget)
+        # Color Specs (Simplified)
+        self.color_detect_widget = QWidget()
+        c_lay = QVBoxLayout(self.color_detect_widget)
         c_lay.setContentsMargins(0,0,0,0)
-        self.pick_color_btn = QPushButton("Pick Target Color")
-        self.pick_color_btn.clicked.connect(self.open_color_picker)
-        c_lay.addWidget(self.pick_color_btn)
         
-        # Compact HSV Sliders
-        self.h_min_slider = self.create_slider("H Min", 0, 179, 0, c_lay)
-        self.h_max_slider = self.create_slider("H Max", 0, 179, 179, c_lay)
-        self.s_min_slider = self.create_slider("S Min", 0, 255, 0, c_lay)
-        self.s_max_slider = self.create_slider("S Max", 0, 255, 255, c_lay)
-        self.v_min_slider = self.create_slider("V Min", 0, 255, 0, c_lay)
-        self.v_max_slider = self.create_slider("V Max", 0, 255, 255, c_lay)
-        dyn_lay.addWidget(self.color_widget)
+        # Target Color Button
+        self.target_color_btn = QPushButton("Pick Target Color")
+        self.target_color_btn.clicked.connect(self.open_color_picker)
+        self.target_color_btn.setStyleSheet("background-color: #ff0000; color: #fff; padding: 10px;")
+        c_lay.addWidget(self.target_color_btn)
+        
+        # Tolerance Slider
+        self.tolerance_slider = self.create_slider("Tolerance", 5, 100, 30, c_lay)
+        
+        dyn_lay.addWidget(self.color_detect_widget)
         
         layout.addWidget(self.dynamic_settings_group)
         
@@ -109,31 +120,35 @@ class ControlPanel(QWidget):
         layout = QVBoxLayout(self.tab_visuals)
         layout.setSpacing(15)
         
-        # Style
-        style_group = QGroupBox("Style")
-        s_lay = QFormLayout(style_group)
+        # Shape Selection (simple)
+        shape_group = QGroupBox("Shape")
+        shape_lay = QVBoxLayout(shape_group)
         
+        shape_row = QHBoxLayout()
+        shape_row.addWidget(QLabel("Style:"))
         self.shape_combo = ClickableComboBox()
         self.shape_combo.addItems([e.value for e in VisualStyle])
         self.shape_combo.currentTextChanged.connect(self.emit_visuals)
-        s_lay.addRow("Shape:", self.shape_combo)
+        shape_row.addWidget(self.shape_combo, 1)
+        shape_lay.addLayout(shape_row)
         
-        self.color_combo = ClickableComboBox()
-        self.color_combo.addItems(["White", "Rainbow", "Cycle"])
-        self.color_combo.currentTextChanged.connect(self.emit_visuals)
-        s_lay.addRow("Color:", self.color_combo)
+        layout.addWidget(shape_group)
         
-        self.text_combo = ClickableComboBox()
-        self.text_combo.addItems(["None", "Index", "Random Word"])
-        self.text_combo.currentTextChanged.connect(self.emit_visuals)
-        s_lay.addRow("Text:", self.text_combo)
+        # Color System (modular)
+        color_group = QGroupBox("Color")
+        color_lay = QVBoxLayout(color_group)
+        self.color_widget = ColorEffectWidget()
+        self.color_widget.settings_changed.connect(self.emit_visuals)
+        color_lay.addWidget(self.color_widget)
+        layout.addWidget(color_group)
         
-        self.text_pos_combo = ClickableComboBox()
-        self.text_pos_combo.addItems(["Right", "Top", "Bottom", "Center"])
-        self.text_pos_combo.currentTextChanged.connect(self.emit_visuals)
-        s_lay.addRow("Text Pos:", self.text_pos_combo)
-        
-        layout.addWidget(style_group)
+        # Text System (modular)
+        text_group = QGroupBox("Text")
+        text_lay = QVBoxLayout(text_group)
+        self.text_widget = TextStyleWidget()
+        self.text_widget.settings_changed.connect(self.emit_visuals)
+        text_lay.addWidget(self.text_widget)
+        layout.addWidget(text_group)
         
         # Geometry & Overlays
         geom_group = QGroupBox("Geometry & Overlays")
@@ -233,6 +248,7 @@ class ControlPanel(QWidget):
         return slider
 
     def get_params(self):
+        h_min, h_max, s_min, s_max, v_min, v_max = self._get_target_hsv_range()
         return {
             "mode": self.mode_combo.currentText(),
             "min_area": self.min_area_slider.value(),
@@ -242,26 +258,32 @@ class ControlPanel(QWidget):
             "threshold": self.thresh_slider.value(),
             "canny_low": self.canny_low_slider.value(),
             "canny_high": self.canny_high_slider.value(),
-            "h_min": self.h_min_slider.value(),
-            "h_max": self.h_max_slider.value(),
-            "s_min": self.s_min_slider.value(),
-            "s_max": self.s_max_slider.value(),
-            "v_min": self.v_min_slider.value(),
-            "v_max": self.v_max_slider.value(),
+            "h_min": h_min,
+            "h_max": h_max,
+            "s_min": s_min,
+            "s_max": s_max,
+            "v_min": v_min,
+            "v_max": v_max,
         }
 
     def get_visual_settings(self):
-        return {
-            "color_mode": self.color_combo.currentText(),
-            "text_mode": self.text_combo.currentText(),
+        # Base settings
+        settings = {
             "shape_style": self.shape_combo.currentText(),
             "fixed_size_enabled": self.fixed_size_chk.isChecked(),
             "fixed_size": self.size_spin.value(),
             "show_dot": self.dot_chk.isChecked(),
             "show_traces": self.trace_chk.isChecked(),
             "border_thickness": self.border_slider.value(),
-            "text_position": self.text_pos_combo.currentText()
         }
+        
+        # Merge color settings
+        settings.update(self.color_widget.get_settings())
+        
+        # Merge text settings
+        settings.update(self.text_widget.get_settings())
+        
+        return settings
 
     def emit_visuals(self, *args):
         self.visuals_changed.emit(self.get_visual_settings())
@@ -280,18 +302,37 @@ class ControlPanel(QWidget):
     def on_mode_changed(self, mode):
         self.gray_widget.setVisible(mode == DetectionMode.GRAYSCALE.value)
         self.edge_widget.setVisible(mode == DetectionMode.EDGES.value)
-        self.color_widget.setVisible(mode == DetectionMode.COLOR.value)
+        self.color_detect_widget.setVisible(mode == DetectionMode.COLOR.value)
         self.emit_params()
 
     def open_color_picker(self):
         color = QColorDialog.getColor()
         if color.isValid():
-            h, s, v, _ = color.getHsv()
-            h = int(h / 2)
-            tol = 20
-            self.h_min_slider.setValue(max(0, h - tol))
-            self.h_max_slider.setValue(min(179, h + tol))
-            self.s_min_slider.setValue(max(0, s - 50))
-            self.s_max_slider.setValue(255)
-            self.v_min_slider.setValue(max(0, v - 50))
-            self.v_max_slider.setValue(255)
+            # Update button appearance
+            self.target_color_btn.setStyleSheet(
+                f"background-color: {color.name()}; "
+                f"color: {'#000' if color.lightness() > 128 else '#fff'}; "
+                "padding: 10px;"
+            )
+            # Store the target color for get_params
+            self._target_color = color
+            self.emit_params()
+    
+    def _get_target_hsv_range(self):
+        """Convert stored target color and tolerance to HSV range."""
+        if not hasattr(self, '_target_color'):
+            return 0, 179, 0, 255, 0, 255  # Full range default
+        
+        color = self._target_color
+        h, s, v, _ = color.getHsv()
+        h = int(h / 2)  # Qt uses 0-359, OpenCV uses 0-179
+        tol = self.tolerance_slider.value()
+        
+        h_min = max(0, h - tol)
+        h_max = min(179, h + tol)
+        s_min = max(0, s - 50)
+        s_max = 255
+        v_min = max(0, v - 50)
+        v_max = 255
+        
+        return h_min, h_max, s_min, s_max, v_min, v_max
