@@ -77,6 +77,11 @@ class VideoProcessor(QThread):
             
         visualizer.fixed_size = settings.get("fixed_size", 50)
         visualizer.show_center_dot = settings.get("show_dot", True)
+        
+        # New Settings
+        visualizer.show_traces = settings.get("show_traces", True)
+        visualizer.border_thickness = settings.get("border_thickness", 2)
+        visualizer.text_position = settings.get("text_position", "Right")
 
     def update_params(self, params):
         self.params = params
@@ -201,7 +206,7 @@ class VideoProcessor(QThread):
                 else:
                     out_frame = debug_img
             else:
-                out_frame = visualizer.draw(frame, objects, shape_type=self.shape_type)
+                out_frame = visualizer.draw(frame, objects, shape_type=self.shape_type, frame_idx=frame_idx)
 
             # Convert for Qt (BGR -> RGB)
             rgb_image = cv2.cvtColor(out_frame, cv2.COLOR_BGR2RGB)
@@ -219,7 +224,7 @@ class VideoProcessor(QThread):
                 if self.debug_mode: # If debugging during export, re-draw "clean" for export?
                      # For now, export what is seen or force clean. 
                      # Usually export is clean.
-                     clean_frame = visualizer.draw(frame, objects, shape=self.shape_type)
+                     clean_frame = visualizer.draw(frame, objects, shape=self.shape_type, frame_idx=frame_idx)
                      out.write(clean_frame)
                 else:
                     out.write(out_frame)

@@ -77,10 +77,27 @@ class ControlPanel(QWidget):
         vis_lay.addLayout(size_row)
 
         # Toggles
+        # Toggles & Extra Settings
         self.dot_chk = QCheckBox("Show Centroid Dot")
         self.dot_chk.setChecked(True)
         self.dot_chk.toggled.connect(self.emit_visuals)
         vis_lay.addWidget(self.dot_chk)
+
+        self.trace_chk = QCheckBox("Show Traces")
+        self.trace_chk.setChecked(True)
+        self.trace_chk.toggled.connect(self.emit_visuals)
+        vis_lay.addWidget(self.trace_chk)
+        
+        # Border Thickness
+        self.border_slider = self.create_slider("Border Thickness", 1, 10, 2, vis_lay)
+        self.border_slider.valueChanged.connect(self.emit_visuals)
+        
+        # Text Position
+        vis_lay.addWidget(QLabel("Text Position:"))
+        self.text_pos_combo = ClickableComboBox()
+        self.text_pos_combo.addItems(["Right", "Top", "Bottom", "Center"])
+        self.text_pos_combo.currentTextChanged.connect(self.emit_visuals)
+        vis_lay.addWidget(self.text_pos_combo)
 
         self.vis_box.content_layout.addLayout(vis_lay)
         layout.addWidget(self.vis_box)
@@ -222,7 +239,10 @@ class ControlPanel(QWidget):
             "shape_style": self.shape_combo.currentText(),
             "fixed_size_enabled": self.fixed_size_chk.isChecked(),
             "fixed_size": self.size_spin.value(),
-            "show_dot": self.dot_chk.isChecked()
+            "show_dot": self.dot_chk.isChecked(),
+            "show_traces": self.trace_chk.isChecked(),
+            "border_thickness": self.border_slider.value(),
+            "text_position": self.text_pos_combo.currentText()
         }
 
     def emit_visuals(self, *args):

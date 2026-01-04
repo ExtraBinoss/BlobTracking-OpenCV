@@ -40,6 +40,11 @@ class Visualizer:
         self.show_center_dot = True
         self.fixed_size = 50 
         self.glow_enabled = True
+        
+        # New Visual Settings
+        self.show_traces = True
+        self.border_thickness = 2
+        self.text_position = "Right" # Options: Right, Top, Center, Bottom
 
     def set_color_strategy(self, strategy):
         self.color_strategy = strategy
@@ -50,13 +55,12 @@ class Visualizer:
     def set_text_strategy(self, strategy):
         self.text_strategy = strategy
 
-    def draw(self, frame, objects, shape_type="square"): # shape_type kept for legacy signal compatibility for now, but strategy overrides
+    def draw(self, frame, objects, shape_type="square", frame_idx=0): # shape_type kept for legacy signal compatibility for now, but strategy overrides
         # simple objects for trace tracking
         simple_objects = {oid: (o[0], o[1]) for oid, o in objects.items()}
         self.state.update(simple_objects)
         
         overlay = frame.copy()
-        frame_idx = 0 # Context needed? Maybe pass in draw() if needed for cycle colors
         
         for obj_id, data in objects.items():
             x, y, radius = data # Centroid and radius from tracker
@@ -75,12 +79,13 @@ class Visualizer:
             text = self.text_strategy.get_text(obj_id, frame_idx)
 
             # Draw Trace
-            trace = self.state.traces.get(obj_id, [])
-            if len(trace) > 1:
-                limit = min(len(trace), 20)
-                for i in range(1, limit):
-                    thickness = int(np.sqrt(64 / float(i + 1)) * 2)
-                    cv2.line(frame, trace[i - 1], trace[i], color, thickness)
+            if self.show_traces:
+                trace = self.state.traces.get(obj_id, [])
+                if len(trace) > 1:
+                    limit = min(len(trace), 20)
+                    for i in range(1, limit):
+                        thickness = int(np.sqrt(64 / float(i + 1)) * 2)
+                        cv2.line(frame, trace[i - 1], trace[i], color, thickness)
 
             # Draw Shape
             # We use gw/gh to determine radius if circle
@@ -96,13 +101,13 @@ class Visualizer:
             is_circle = (shape_type.lower() == "circle")
             
             if is_circle:
-                cv2.circle(frame, center, draw_radius, color, 2)
+                cv2.circle(frame, center, draw_radius, color, self.border_thickness)
                 if self.glow_enabled:
                      cv2.circle(overlay, center, draw_radius + 5, color, -1)
             else:
                 top_left = (gx, gy)
                 bottom_right = (gx + gw, gy + gh)
-                cv2.rectangle(frame, top_left, bottom_right, color, 2)
+                cv2.rectangle(frame, top_left, bottom_right, color, self.border_thickness)
                 if self.glow_enabled:
                     cv2.rectangle(overlay, (gx - 2, gy - 2), (gx + gw + 2, gy + gh + 2), color, -1)
             
@@ -112,7 +117,23 @@ class Visualizer:
 
             # Draw Text
             if text:
-                cv2.putText(frame, text, (gx + gw + 5, gy + 10), 
+                # Calculate position based on self.text_position
+                tx, ty = gx + gw + 5, gy + 10 # Default 'Right'
+                
+                tp = self.text_position.lower()
+                if tp == "top":
+                    tx = gx
+                    ty = gy - 10
+                elif tp == "bottom":
+                    tx = gx
+                    ty = gy + gh + 20
+                elif tp == "center":
+                    # Rough centering
+                    text_size, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+                    tx = center[0] - text_size[0] // 2
+                    ty = center[1] + text_size[1] // 2
+                
+                cv2.putText(frame, text, (tx, ty), 
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         # Apply overlay
