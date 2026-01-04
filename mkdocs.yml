@@ -1,6 +1,7 @@
 site_name: BlobTrack Documentation
 site_description: User documentation for BlobTrack - Real-time organic video visuals.
 site_author: BlobTrack Team
+site_url: https://ExtraBinoss.github.io/BlobTracking-OpenCV/
 
 theme:
   name: material
