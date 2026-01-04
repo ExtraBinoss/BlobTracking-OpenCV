@@ -15,10 +15,10 @@ class MainWindow(QMainWindow):
         self.resize(1000, 700) # Adjusted size
         
         self.processor = None
-        self.dark_mode = True
+        self.processor = None
         
         self.init_ui()
-        self.apply_theme() # Initial theme application moved here
+        ThemeManager.apply_theme()
 
     def init_ui(self):
         # Set Window Icon
@@ -70,10 +70,11 @@ class MainWindow(QMainWindow):
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         toolbar.addWidget(spacer)
 
-        # Theme Toggle
-        theme_action = QAction("Toggle Theme", self)
-        theme_action.triggered.connect(self.toggle_theme)
-        toolbar.addAction(theme_action)
+        # Spacer (Before buttons)
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        toolbar.addWidget(spacer)
+
         
         # Exit Button
         exit_action = QAction("Exit", self)
@@ -160,17 +161,6 @@ class MainWindow(QMainWindow):
     def seek_video(self, frame_idx):
         if self.processor:
             self.processor.seek(frame_idx)
-
-    def toggle_theme(self):
-        self.dark_mode = not self.dark_mode
-        self.apply_theme()
-
-    def apply_theme(self):
-        # We rely on ThemeManager to set stylesheets on the app instance
-        if self.dark_mode:
-            ThemeManager.apply_theme("dark")
-        else:
-            ThemeManager.apply_theme("light")
             
     def keyPressEvent(self, event):
         # Global key handler if focus is elsewhere but we want spacebar to work?
