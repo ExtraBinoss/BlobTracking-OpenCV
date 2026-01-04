@@ -10,6 +10,7 @@ from src.ui.widgets.color_effect_widget import ColorEffectWidget
 from src.ui.widgets.text_style_widget import TextStyleWidget
 from src.ui.widgets.color_picker_widget import CompactColorButton
 from src.core.enums import Platform
+from src.ui.utils.tooltip_manager import InfoTooltip
 
 class ControlPanel(QWidget):
     params_changed = pyqtSignal(dict)
@@ -76,7 +77,14 @@ class ControlPanel(QWidget):
         self.mode_combo.addItems([e.value for e in DetectionMode])
         self.mode_combo.setCurrentText(DetectionMode.EDGES.value)
         self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
-        mode_lay.addWidget(self.mode_combo)
+        self.mode_combo.setCurrentText(DetectionMode.EDGES.value)
+        self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
+        
+        # Row with Tooltip
+        mode_row = QHBoxLayout()
+        mode_row.addWidget(self.mode_combo)
+        self.add_tooltip(mode_row, None, "detection", "mode")
+        mode_lay.addLayout(mode_row)
         layout.addWidget(mode_group)
         
         # 2. Dynamic Settings Area
@@ -87,15 +95,15 @@ class ControlPanel(QWidget):
         self.gray_widget = QWidget()
         g_lay = QVBoxLayout(self.gray_widget)
         g_lay.setContentsMargins(0,0,0,0)
-        self.thresh_slider = self.create_slider("Threshold", 0, 255, 127, g_lay)
+        self.thresh_slider = self.create_slider("Threshold", 0, 255, 127, g_lay, tooltip_key="threshold")
         dyn_lay.addWidget(self.gray_widget)
         
         # Edge Specs
         self.edge_widget = QWidget()
         e_lay = QVBoxLayout(self.edge_widget)
         e_lay.setContentsMargins(0,0,0,0)
-        self.canny_low_slider = self.create_slider("Low Threshold", 0, 255, 50, e_lay)
-        self.canny_high_slider = self.create_slider("High Threshold", 0, 255, 150, e_lay)
+        self.canny_low_slider = self.create_slider("Low Threshold", 0, 255, 50, e_lay, tooltip_key="canny_low")
+        self.canny_high_slider = self.create_slider("High Threshold", 0, 255, 150, e_lay, tooltip_key="canny_high")
         dyn_lay.addWidget(self.edge_widget)
         
         # Color Specs (Simplified)
@@ -110,10 +118,11 @@ class ControlPanel(QWidget):
         self.target_color_btn = CompactColorButton(QColor(255, 0, 0))
         self.target_color_btn.colorChanged.connect(self.emit_params)
         target_row.addWidget(self.target_color_btn, 1)
+        self.add_tooltip(target_row, None, "detection", "target_color")
         c_lay.addLayout(target_row)
         
         # Tolerance Slider
-        self.tolerance_slider = self.create_slider("Tolerance", 5, 100, 30, c_lay)
+        self.tolerance_slider = self.create_slider("Tolerance", 5, 100, 30, c_lay, tooltip_key="tolerance")
         
         dyn_lay.addWidget(self.color_detect_widget)
         
@@ -122,10 +131,10 @@ class ControlPanel(QWidget):
         # 3. General Filters
         filter_group = QGroupBox("Pre-processing & Filters")
         f_lay = QVBoxLayout(filter_group)
-        self.blur_slider = self.create_slider("Blur", 0, 20, 0, f_lay)
-        self.dilate_slider = self.create_slider("Dilation", 0, 20, 0, f_lay)
-        self.min_area_slider = self.create_slider("Min Area", 10, 10000, 100, f_lay)
-        self.max_area_slider = self.create_slider("Max Area", 100, 100000, 50000, f_lay)
+        self.blur_slider = self.create_slider("Blur", 0, 20, 0, f_lay, tooltip_key="blur")
+        self.dilate_slider = self.create_slider("Dilation", 0, 20, 0, f_lay, tooltip_key="dilation")
+        self.min_area_slider = self.create_slider("Min Area", 10, 10000, 100, f_lay, tooltip_key="min_area")
+        self.max_area_slider = self.create_slider("Max Area", 100, 100000, 50000, f_lay, tooltip_key="max_area")
         layout.addWidget(filter_group)
         
         layout.addStretch()
@@ -144,6 +153,7 @@ class ControlPanel(QWidget):
         self.shape_combo.addItems([e.value for e in VisualStyle])
         self.shape_combo.currentTextChanged.connect(self.emit_visuals)
         shape_row.addWidget(self.shape_combo, 1)
+        self.add_tooltip(shape_row, None, "visuals", "shape_style")
         shape_lay.addLayout(shape_row)
         
         layout.addWidget(shape_group)
@@ -172,12 +182,18 @@ class ControlPanel(QWidget):
         self.trace_chk = QCheckBox("Show Traces")
         self.trace_chk.setChecked(True)
         self.trace_chk.toggled.connect(self.emit_visuals)
-        t_lay.addWidget(self.trace_chk)
+        self.trace_chk.toggled.connect(self.emit_visuals)
         
-        self.trace_thickness_slider = self.create_slider("Thickness", 1, 10, 3, t_lay)
+        # Trace Checkbox Row
+        tr_row = QHBoxLayout()
+        tr_row.addWidget(self.trace_chk)
+        self.add_tooltip(tr_row, None, "visuals", "show_traces")
+        t_lay.addLayout(tr_row)
+        
+        self.trace_thickness_slider = self.create_slider("Thickness", 1, 10, 3, t_lay, tooltip_key="trace_thickness", tooltip_cat="visuals")
         self.trace_thickness_slider.valueChanged.connect(self.emit_visuals)
         
-        self.trace_lifetime_slider = self.create_slider("Lifetime", 5, 60, 20, t_lay)
+        self.trace_lifetime_slider = self.create_slider("Lifetime", 5, 60, 20, t_lay, tooltip_key="trace_lifetime", tooltip_cat="visuals")
         self.trace_lifetime_slider.valueChanged.connect(self.emit_visuals)
         
         trace_color_row = QHBoxLayout()
@@ -185,6 +201,7 @@ class ControlPanel(QWidget):
         self.trace_color_btn = CompactColorButton(QColor(0, 255, 0))
         self.trace_color_btn.colorChanged.connect(self.emit_visuals)
         trace_color_row.addWidget(self.trace_color_btn, 1)
+        self.add_tooltip(trace_color_row, None, "visuals", "trace_color")
         t_lay.addLayout(trace_color_row)
         
         layout.addWidget(trace_group)
@@ -201,10 +218,12 @@ class ControlPanel(QWidget):
         self.max_blobs_spin.setRange(1, 100)
         self.max_blobs_spin.setValue(50)
         self.max_blobs_spin.valueChanged.connect(self.emit_visuals)
+        self.max_blobs_spin.valueChanged.connect(self.emit_visuals)
         max_row.addWidget(self.max_blobs_spin, 1)
+        self.add_tooltip(max_row, None, "visuals", "max_blobs")
         b_lay.addLayout(max_row)
         
-        self.border_slider = self.create_slider("Border", 1, 10, 2, b_lay)
+        self.border_slider = self.create_slider("Border", 1, 10, 2, b_lay, tooltip_key="border_thickness", tooltip_cat="visuals")
         self.border_slider.valueChanged.connect(self.emit_visuals)
         
         # Fill & Dot options
@@ -219,10 +238,15 @@ class ControlPanel(QWidget):
         self.fill_chk.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.fill_chk.toggled.connect(self.emit_visuals)
         self.fill_chk.toggled.connect(self.toggle_fill_opacity_slider)
-        fill_col.addWidget(self.fill_chk)
+        self.fill_chk.toggled.connect(self.toggle_fill_opacity_slider)
+        
+        fill_row_chk = QHBoxLayout()
+        fill_row_chk.addWidget(self.fill_chk)
+        self.add_tooltip(fill_row_chk, None, "visuals", "fill_shape")
+        fill_col.addLayout(fill_row_chk)
         
         # Opacity Slider (create_slider adds to layout)
-        self.fill_opacity_slider = self.create_slider("Fill Opacity", 0, 100, 50, fill_col)
+        self.fill_opacity_slider = self.create_slider("Fill Opacity", 0, 100, 50, fill_col, tooltip_key="fill_opacity", tooltip_cat="visuals")
         self.fill_opacity_slider.setVisible(False)
         self.fill_opacity_slider.valueChanged.connect(self.emit_visuals)
         
@@ -231,7 +255,20 @@ class ControlPanel(QWidget):
         self.dot_chk = QCheckBox("Show Dot")
         self.dot_chk.setChecked(False) # Default No Dot
         self.dot_chk.toggled.connect(self.emit_visuals)
-        opts_row.addWidget(self.dot_chk)
+        self.dot_chk.toggled.connect(self.emit_visuals)
+        
+        # Dot row wrapper for tooltip
+        dot_wrapper = QHBoxLayout()
+        # Remove widget from opts_row first if it was added directly? 
+        # The original code added to opts_row. We need to intercept.
+        # Original: opts_row.addWidget(self.dot_chk)
+        # We'll make a vertical layout for the right side or just add the tooltip to opts_row?
+        # opts_row is HBox. Left is Fill Col. Right is Dot.
+        
+        # Let's wrap dot in VBox or just add tooltip button next to it?
+        dot_wrapper.addWidget(self.dot_chk)
+        self.add_tooltip(dot_wrapper, None, "visuals", "show_dot")
+        opts_row.addLayout(dot_wrapper)
         
         b_lay.addLayout(opts_row)
         
@@ -240,6 +277,7 @@ class ControlPanel(QWidget):
         self.fixed_size_chk = QCheckBox("Fixed Size")
         self.fixed_size_chk.toggled.connect(self.emit_visuals)
         fs_row.addWidget(self.fixed_size_chk)
+        self.add_tooltip(fs_row, None, "visuals", "fixed_size")
         
         self.size_spin = QSpinBox()
         self.size_spin.setRange(10, 500)
@@ -265,6 +303,7 @@ class ControlPanel(QWidget):
         self.file_label.setWordWrap(True)
         self.file_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.file_label.setStyleSheet("border: 2px dashed #555; padding: 20px; border-radius: 8px;")
+        self.file_label.setStyleSheet("border: 2px dashed #555; padding: 20px; border-radius: 8px;")
         i_lay.addWidget(self.file_label)
         
         btn_file = QPushButton("Select Video File")
@@ -273,6 +312,8 @@ class ControlPanel(QWidget):
         i_lay.addWidget(btn_file)
         
         layout.addWidget(info_group)
+        
+
         
         # Actions
         action_group = QGroupBox("Actions")
@@ -295,7 +336,7 @@ class ControlPanel(QWidget):
         layout.addWidget(action_group)
         layout.addStretch()
 
-    def create_slider(self, label_text, min_val, max_val, default, parent_layout):
+    def create_slider(self, label_text, min_val, max_val, default, parent_layout, tooltip_key=None, tooltip_cat="detection"):
         container = QWidget()
         lay = QVBoxLayout(container)
         lay.setContentsMargins(0, 5, 0, 5)
@@ -307,6 +348,10 @@ class ControlPanel(QWidget):
         
         lbl = QLabel(label_text)
         top_lay.addWidget(lbl)
+        
+        # Add Tooltip here based on label_text mapping or pass key
+        # We need to map label_text to key or pass key in create_slider
+        # Refactoring create_slider signature to accept key
         
         val_lbl = QLabel(str(default))
         val_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
@@ -320,6 +365,12 @@ class ControlPanel(QWidget):
         slider.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         slider.valueChanged.connect(self.emit_params)
         slider.valueChanged.connect(lambda v, vl=val_lbl: vl.setText(str(v)))
+        lay.addWidget(slider)
+        
+        # Inject Tooltip if key provided
+        if tooltip_key:
+            self.add_tooltip(top_lay, lbl, tooltip_cat, tooltip_key)
+            
         lay.addWidget(slider)
         
         parent_layout.addWidget(container)
@@ -438,3 +489,11 @@ class ControlPanel(QWidget):
         self.fill_opacity_slider.setVisible(checked)
         # Force layout update if needed
         self.updateGeometry()
+
+    def add_tooltip(self, layout, label_widget, category, key):
+        """Helper to append tooltip next to a label."""
+        tt = InfoTooltip(category, key)
+        # Find the label in the layout if possible or expected usage
+        # This helper assumes layout is HBox with label already added
+        layout.addWidget(tt)
+        layout.addStretch() # Push subsequent items or generally just fit

@@ -1,0 +1,138 @@
+{
+  "detection": {
+    "mode": {
+      "title": "Detection Mode",
+      "desc": "Choose the algorithm used to find blobs.\n• Grayscale: Brightness based.\n• Edges: Contours/Outline based.\n• Color: Specific color range."
+    },
+    "threshold": {
+      "title": "Brightness Threshold",
+      "desc": "Pixels brighter than this value are considered blobs. Lower values pick up darker objects."
+    },
+    "canny_low": {
+      "title": "Identify Weak Edges",
+      "desc": "Lower bound for edge detection. Lines below this contrast intensity are discarded."
+    },
+    "canny_high": {
+      "title": "Identify Strong Edges",
+      "desc": "Upper bound for edge detection. Lines above this contrast are definitely edges."
+    },
+    "target_color": {
+      "title": "Target Color",
+      "desc": "Click to pick the specific color you want to track."
+    },
+    "tolerance": {
+      "title": "Color Tolerance",
+      "desc": "How much variation from the target color is allowed. Higher values match a broader range of shades."
+    },
+    "blur": {
+      "title": "Blur Amount",
+      "desc": "Softens the image before detection. Reduces noise and jagged edges."
+    },
+    "dilation": {
+      "title": "Dilation",
+      "desc": "Expands the white regions of detected blobs. Useful for joining broken parts of an object."
+    },
+    "min_area": {
+      "title": "Minimum Area",
+      "desc": "Smallest allowed blob size (in pixels). Helps ignore small noise."
+    },
+    "max_area": {
+      "title": "Maximum Area",
+      "desc": "Largest allowed blob size. Helps ignore full-screen glitches or backgrounds."
+    }
+  },
+  "visuals": {
+    "shape_style": {
+      "title": "Shape Style",
+      "desc": "The geometric shape drawn for each tracked blob."
+    },
+    "max_blobs": {
+      "title": "Max Blob Count",
+      "desc": "Limit the number of objects tracked simultaneously to keep performance high."
+    },
+    "border_thickness": {
+      "title": "Border Thickness",
+      "desc": "Thickness of the shape outline in pixels."
+    },
+    "fill_shape": {
+      "title": "Fill Shape",
+      "desc": "Toggle to fill the inside of the shapes with color."
+    },
+    "fill_opacity": {
+      "title": "Fill Opacity",
+      "desc": "Transparency of the shape fill. 0 is invisible, 100 is solid."
+    },
+    "show_dot": {
+      "title": "Show Center Dot",
+      "desc": "Draws a small red dot at the precise center of the tracked object."
+    },
+    "fixed_size": {
+      "title": "Fixed Size",
+      "desc": "Force all shapes to have the same size, ignoring the actual blob size."
+    },
+    "fixed_size_val": {
+      "title": "Size Value",
+      "desc": "The pixel size for Fixed Size mode."
+    },
+    "show_traces": {
+      "title": "Show Traces",
+      "desc": "Draws a trail following the movement of blobs."
+    },
+    "trace_thickness": {
+      "title": "Trace Thickness",
+      "desc": "Width of the movement trail lines."
+    },
+    "trace_lifetime": {
+      "title": "Trace Lifetime",
+      "desc": "How long (in frames) the trail remains visible."
+    },
+    "trace_color": {
+      "title": "Trace Color",
+      "desc": "Color of the movement trail."
+    }
+  },
+  "color": {
+    "mode": {
+      "title": "Color Mode",
+      "desc": "Determines how shapes are colored.\n• Solid: Single static color.\n• Effect: Dynamic patterns (Rainbow, etc).\n• Custom: Fine-tuned effects."
+    },
+    "solid_color": {
+      "title": "Reference Color",
+      "desc": "The solid color used for all shapes."
+    },
+    "effect_type": {
+      "title": "Effect Type",
+      "desc": "Select the color animation pattern."
+    },
+    "speed": {
+      "title": "Effect Speed",
+      "desc": "How fast the colors cycle or animate."
+    },
+    "intensity": {
+      "title": "Effect Intensity",
+      "desc": "Strength or saturation of the effect."
+    },
+    "primary_color": {
+      "title": "Base Color",
+      "desc": "The starting or main color for effects like 'Breathe'."
+    }
+  },
+  "text": {
+    "mode": {
+      "title": "Text Mode",
+      "desc": "What text to display next to blobs.\n• Index: 1, 2, 3...\n• Random Word: Generates cool sci-fi words."
+    },
+    "position": {
+      "title": "Text Position",
+      "desc": "Where the text appears relative to the blob."
+    },
+    "size": {
+      "title": "Font Size",
+      "desc": "Size of the text in points."
+    },
+    "color": {
+      "title": "Text Color",
+      "desc": "Color of the text overlay."
+    }
+  }
+}

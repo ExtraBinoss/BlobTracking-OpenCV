@@ -5,6 +5,7 @@ from PyQt6.QtGui import QColor
 from src.ui.widgets.custom_combo import ClickableComboBox
 from src.ui.widgets.color_picker_widget import CompactColorButton
 from src.core.enums import ColorMode, ColorEffectType
+from src.ui.utils.tooltip_manager import InfoTooltip
 
 class ColorEffectWidget(QWidget):
     """Modular widget for color/effect configuration."""
@@ -14,6 +15,12 @@ class ColorEffectWidget(QWidget):
         super().__init__()
         self.init_ui()
     
+    def add_tooltip(self, layout, label_widget, category, key):
+        """Helper to append tooltip."""
+        tt = InfoTooltip(category, key)
+        layout.addWidget(tt)
+        layout.addStretch()
+
     def init_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -26,6 +33,7 @@ class ColorEffectWidget(QWidget):
         self.mode_combo.addItems([e.value for e in ColorMode])
         self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
         mode_row.addWidget(self.mode_combo, 1)
+        self.add_tooltip(mode_row, None, "color", "mode")
         layout.addLayout(mode_row)
         
         # Stacked Widget for mode-specific settings
@@ -39,7 +47,11 @@ class ColorEffectWidget(QWidget):
         
         self.solid_color_btn = CompactColorButton(QColor(255, 255, 255))
         self.solid_color_btn.colorChanged.connect(self.emit_settings)
-        solid_lay.addWidget(self.solid_color_btn)
+        # Create a layout to hold btn + tooltip
+        sb_row = QHBoxLayout()
+        sb_row.addWidget(self.solid_color_btn)
+        self.add_tooltip(sb_row, None, "color", "solid_color")
+        solid_lay.addLayout(sb_row)
         self.stack.addWidget(self.solid_page)
         
         # --- Page 1: Effect (Presets) ---
@@ -52,7 +64,11 @@ class ColorEffectWidget(QWidget):
         effects = [e.value for e in ColorEffectType if e != ColorEffectType.NONE]
         self.effect_combo.addItems(effects)
         self.effect_combo.currentTextChanged.connect(self.emit_settings)
-        effect_lay.addWidget(self.effect_combo)
+        # Row for combo + tooltip
+        ec_row = QHBoxLayout()
+        ec_row.addWidget(self.effect_combo)
+        self.add_tooltip(ec_row, None, "color", "effect_type")
+        effect_lay.addLayout(ec_row)
         
         # Effect Speed
         speed_row = QHBoxLayout()
@@ -65,6 +81,7 @@ class ColorEffectWidget(QWidget):
         self.speed_label = QLabel("50")
         self.speed_slider.valueChanged.connect(lambda v: self.speed_label.setText(str(v)))
         speed_row.addWidget(self.speed_label)
+        self.add_tooltip(speed_row, None, "color", "speed")
         effect_lay.addLayout(speed_row)
         
         self.stack.addWidget(self.effect_page)
@@ -81,6 +98,7 @@ class ColorEffectWidget(QWidget):
         self.custom_effect_combo.addItems([e.value for e in ColorEffectType])
         self.custom_effect_combo.currentTextChanged.connect(self.emit_settings)
         base_row.addWidget(self.custom_effect_combo, 1)
+        self.add_tooltip(base_row, None, "color", "effect_type")
         custom_lay.addLayout(base_row)
         
         # Speed
@@ -91,6 +109,7 @@ class ColorEffectWidget(QWidget):
         self.custom_speed.setValue(50)
         self.custom_speed.valueChanged.connect(self.emit_settings)
         cspeed_row.addWidget(self.custom_speed, 1)
+        self.add_tooltip(cspeed_row, None, "color", "speed")
         custom_lay.addLayout(cspeed_row)
         
         # Intensity
@@ -101,6 +120,7 @@ class ColorEffectWidget(QWidget):
         self.intensity_slider.setValue(75)
         self.intensity_slider.valueChanged.connect(self.emit_settings)
         intensity_row.addWidget(self.intensity_slider, 1)
+        self.add_tooltip(intensity_row, None, "color", "intensity")
         custom_lay.addLayout(intensity_row)
         
         # Primary Color
@@ -109,6 +129,7 @@ class ColorEffectWidget(QWidget):
         self.custom_color_btn = CompactColorButton(QColor(67, 160, 71))
         self.custom_color_btn.colorChanged.connect(self.emit_settings)
         color_row.addWidget(self.custom_color_btn, 1)
+        self.add_tooltip(color_row, None, "color", "primary_color")
         custom_lay.addLayout(color_row)
         
         self.stack.addWidget(self.custom_page)

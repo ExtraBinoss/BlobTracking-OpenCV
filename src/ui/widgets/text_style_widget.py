@@ -5,6 +5,7 @@ from PyQt6.QtGui import QColor
 from src.ui.widgets.custom_combo import ClickableComboBox
 from src.ui.widgets.color_picker_widget import CompactColorButton
 from src.core.enums import TextMode, TextPosition
+from src.ui.utils.tooltip_manager import InfoTooltip
 
 class TextStyleWidget(QWidget):
     """Modular widget for text style configuration."""
@@ -14,6 +15,13 @@ class TextStyleWidget(QWidget):
         super().__init__()
         self.init_ui()
     
+        
+    def add_tooltip(self, layout, label_widget, category, key):
+        """Helper to append tooltip."""
+        tt = InfoTooltip(category, key)
+        layout.addWidget(tt)
+        layout.addStretch()
+
     def init_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -26,6 +34,7 @@ class TextStyleWidget(QWidget):
         self.mode_combo.addItems([e.value for e in TextMode])
         self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
         mode_row.addWidget(self.mode_combo, 1)
+        self.add_tooltip(mode_row, None, "text", "mode")
         layout.addLayout(mode_row)
         
         # Sub-properties container (hidden when "None")
@@ -41,6 +50,7 @@ class TextStyleWidget(QWidget):
         self.pos_combo.addItems([e.value for e in TextPosition])
         self.pos_combo.currentTextChanged.connect(self.emit_settings)
         pos_row.addWidget(self.pos_combo, 1)
+        self.add_tooltip(pos_row, None, "text", "position")
         sub_lay.addLayout(pos_row)
         
         # Font Size
@@ -54,6 +64,7 @@ class TextStyleWidget(QWidget):
         self.size_label = QLabel("14")
         self.size_slider.valueChanged.connect(lambda v: self.size_label.setText(str(v)))
         size_row.addWidget(self.size_label)
+        self.add_tooltip(size_row, None, "text", "size")
         sub_lay.addLayout(size_row)
         
         # Text Color
@@ -62,6 +73,7 @@ class TextStyleWidget(QWidget):
         self.text_color_btn = CompactColorButton(QColor(255, 255, 255))
         self.text_color_btn.colorChanged.connect(self.emit_settings)
         color_row.addWidget(self.text_color_btn, 1)
+        self.add_tooltip(color_row, None, "text", "color")
         sub_lay.addLayout(color_row)
         
         layout.addWidget(self.sub_props)
