@@ -8,8 +8,8 @@ At its core, BlobTrack uses **OpenCV** (Open Source Computer Vision Library), a 
 
 ### 1. Preprocessing: Cleaning the Image
 Before we can find "blobs", we need to simplify the video.
-*   **Grayscale**: Color often distracts the computer. We convert the image to black and white intensities.
-*   **Blurring**: Real-world video has "noise" (grain). We apply a **Gaussian Blur** to smooth out these imperfections, ensuring we detect large shapes rather than tiny specks of dust.
+- **Grayscale**: Color often distracts the computer. We convert the image to black and white intensities.
+- **Blurring**: Real-world video has "noise" (grain). We apply a **Gaussian Blur** to smooth out these imperfections, ensuring we detect large shapes rather than tiny specks of dust.
 
 ### 2. Detection: Finding the Signal
 This is where the magic happens. We convert the image into a **Binary Mask**—an image made purely of black (background) and white (foreground) pixels.
@@ -33,8 +33,8 @@ The visuals produced by tools like BlobTrack resonate deeply with current design
 
 ### The "Liquid" & "Acid" Graphic Trend
 In recent years, design has moved away from the rigid, flat "Corporate Memphis" style towards something messier, organic, and chaotic. This is often called **Acid Graphics** or **Y2K Futurism**.
-*   **Fluidity**: Blobs behave like liquid (mercury, water, lava). Humans are naturally attracted to fluid motion—it feels biological and alive.
-*   **Nostalgia**: Reminiscent of early 2000s visuals (Winamp visualizers, iTunes visuals, Windows Media Player) but rendered with modern high-definition crispness.
+- **Fluidity**: Blobs behave like liquid (mercury, water, lava). Humans are naturally attracted to fluid motion—it feels biological and alive.
+- **Nostalgia**: Reminiscent of early 2000s visuals (Winamp visualizers, iTunes visuals, Windows Media Player) but rendered with modern high-definition crispness.
 
 ### Generative Art
 Unlike a pre-animated video, generative art is unpredictable. It reacts to the input. This "controlled chaos" is fascinating to watch because it bridges the gap between the real world (the source video) and the digital world (the output code).
