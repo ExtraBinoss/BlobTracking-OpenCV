@@ -37,7 +37,8 @@ class Visualizer:
         self.text_strategy = IndexTextStrategy()
         
         # Settings
-        self.show_center_dot = True
+        self.show_center_dot = False
+        self.fill_shape = False # Default hollow
         self.fixed_size = 50 
         self.glow_enabled = True
         
@@ -118,14 +119,19 @@ class Visualizer:
             
             is_circle = (shape_type.lower() == "circle")
             
+            # Determine thickness: -1 for fill, border_thickness for hollow
+            thickness = -1 if self.fill_shape else self.border_thickness
+            
             if is_circle:
-                cv2.circle(frame, center, draw_radius, color, self.border_thickness)
+                cv2.circle(frame, center, draw_radius, color, thickness)
                 if self.glow_enabled:
-                     cv2.circle(overlay, center, draw_radius + 5, color, -1)
+                     # Glow is always hollow or filled? Usually glow is soft fill, but let's keep it subtle
+                     glow_thick = -1
+                     cv2.circle(overlay, center, draw_radius + 5, color, glow_thick)
             else:
                 top_left = (gx, gy)
                 bottom_right = (gx + gw, gy + gh)
-                cv2.rectangle(frame, top_left, bottom_right, color, self.border_thickness)
+                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                 if self.glow_enabled:
                     cv2.rectangle(overlay, (gx - 2, gy - 2), (gx + gw + 2, gy + gh + 2), color, -1)
             

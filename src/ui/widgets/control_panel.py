@@ -198,10 +198,19 @@ class ControlPanel(QWidget):
         self.border_slider = self.create_slider("Border", 1, 10, 2, b_lay)
         self.border_slider.valueChanged.connect(self.emit_visuals)
         
-        self.dot_chk = QCheckBox("Show Centroid Dot")
-        self.dot_chk.setChecked(True)
+        # Fill & Dot options
+        opts_row = QHBoxLayout()
+        self.fill_chk = QCheckBox("Fill Shape")
+        self.fill_chk.setChecked(False) # Default Hollow
+        self.fill_chk.toggled.connect(self.emit_visuals)
+        opts_row.addWidget(self.fill_chk)
+
+        self.dot_chk = QCheckBox("Show Dot")
+        self.dot_chk.setChecked(False) # Default No Dot
         self.dot_chk.toggled.connect(self.emit_visuals)
-        b_lay.addWidget(self.dot_chk)
+        opts_row.addWidget(self.dot_chk)
+        
+        b_lay.addLayout(opts_row)
         
         # Fixed Size
         fs_row = QHBoxLayout()
@@ -245,12 +254,19 @@ class ControlPanel(QWidget):
         # Actions
         action_group = QGroupBox("Actions")
         a_lay = QVBoxLayout(action_group)
+        a_lay.setSpacing(10)
         
         self.export_btn = QPushButton("Export Processed Video")
+        self.export_btn.setObjectName("PrimaryButton") # Use theme
         self.export_btn.clicked.connect(self.export_requested)
-        self.export_btn.setStyleSheet("background-color: #2e7d32; color: white; padding: 12px; font-weight: bold;")
         self.export_btn.setEnabled(False)
         a_lay.addWidget(self.export_btn)
+        
+        # Open Location Button
+        self.open_folder_btn = QPushButton("Open File Location")
+        self.open_folder_btn.clicked.connect(self.open_file_location)
+        self.open_folder_btn.setEnabled(False) 
+        a_lay.addWidget(self.open_folder_btn)
         
         layout.addWidget(action_group)
         layout.addStretch()
@@ -310,6 +326,7 @@ class ControlPanel(QWidget):
             "fixed_size_enabled": self.fixed_size_chk.isChecked(),
             "fixed_size": self.size_spin.value(),
             "show_dot": self.dot_chk.isChecked(),
+            "fill_shape": self.fill_chk.isChecked(),
             "show_traces": self.trace_chk.isChecked(),
             "border_thickness": self.border_slider.value(),
             "trace_thickness": self.trace_thickness_slider.value(),
@@ -361,3 +378,27 @@ class ControlPanel(QWidget):
         v_max = 255
         
         return h_min, h_max, s_min, s_max, v_min, v_max
+
+    def open_file_location(self):
+        import subprocess
+        import os
+        
+        path = self.file_label.text()
+        if not path or not os.path.exists(path):
+            return
+            
+        export_path = f"{os.path.splitext(path)[0]}_processed.mp4"
+        if not os.path.exists(export_path):
+             # Try input dir if export doesn't exist
+             folder = os.path.dirname(path)
+        else:
+             folder = os.path.dirname(export_path)
+             
+        # OS Agnostic Open
+        if os.name == 'nt':
+            subprocess.Popen(['explorer', folder])
+        elif os.name == 'posix':
+            subprocess.Popen(['xdg-open', folder])
+        else:
+             # Mac
+            subprocess.Popen(['open', folder])

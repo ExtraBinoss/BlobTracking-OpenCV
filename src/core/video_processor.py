@@ -93,7 +93,8 @@ class VideoProcessor(QThread):
             visualizer.set_shape_strategy(TrackedShapeStrategy())
             
         visualizer.fixed_size = settings.get("fixed_size", 50)
-        visualizer.show_center_dot = settings.get("show_dot", True)
+        visualizer.show_center_dot = settings.get("show_dot", False)
+        visualizer.fill_shape = settings.get("fill_shape", False)
         
         # Overlays
         visualizer.show_traces = settings.get("show_traces", True)

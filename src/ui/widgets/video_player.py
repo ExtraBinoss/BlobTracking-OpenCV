@@ -90,14 +90,6 @@ class VideoPlayer(QWidget):
         self.placeholder_label = QLabel("No Video Loaded")
         self.placeholder_label.setObjectName("PlaceholderLabel")
         self.placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.placeholder_label.setStyleSheet("""
-            QLabel#PlaceholderLabel {
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 18px;
-                font-weight: 500;
-                letter-spacing: 1px;
-            }
-        """)
         self.placeholder_layout.addWidget(self.placeholder_label)
 
         # Big Select Button (Bottom of placeholder)
@@ -169,22 +161,8 @@ class VideoPlayer(QWidget):
         self.btn_debug = QPushButton("Process")
         self.btn_debug.setCheckable(True)
         
-        toggle_style = """
-            QPushButton {
-                background-color: transparent;
-                border: 1px solid #43a047;
-                padding: 4px 12px;
-                color: #ddd;
-                border-radius: 4px;
-            }
-            QPushButton:checked {
-                background-color: #2e7d32;
-                color: #fff;
-                font-weight: bold;
-            }
-        """
-        self.btn_video.setStyleSheet(toggle_style)
-        self.btn_debug.setStyleSheet(toggle_style)
+        self.btn_video.setObjectName("ModeToggle")
+        self.btn_debug.setObjectName("ModeToggle")
         
         self.view_group.addButton(self.btn_video)
         self.view_group.addButton(self.btn_debug)

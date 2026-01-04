@@ -57,6 +57,30 @@ class ThemeManager:
             background-color: #3e3e3e;
         }
         
+        /* HORIZONTAL SCROLL BAR (Dark) */
+        QScrollBar:horizontal {
+            border: none;
+            background: #2b2b2b;
+            height: 10px;
+            margin: 0px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle:horizontal {
+            background: #555;
+            min-width: 20px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle:horizontal:hover {
+            background: #666;
+        }
+        QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+            border: none;
+            background: none;
+        }
+        QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+            background: none;
+        }
+        
         /* GROUP BOX */
         QGroupBox {
             border: 1px solid #3e3e3e;
@@ -91,6 +115,22 @@ class ThemeManager:
         QPushButton:disabled {
             background-color: #2b2b2b;
             color: #777;
+            border-color: #333;
+        }
+        
+        QPushButton#PrimaryButton {
+            background-color: #2e7d32;
+            color: white;
+            font-weight: bold;
+            border: 1px solid #1b5e20;
+        }
+        QPushButton#PrimaryButton:hover {
+            background-color: #388e3c;
+            border-color: #4caf50;
+        }
+        QPushButton#PrimaryButton:disabled {
+            background-color: #2b2b2b;
+            color: #555;
             border-color: #333;
         }
 
@@ -211,6 +251,26 @@ class ThemeManager:
             border: 1px solid #333;
             border-radius: 12px;
         }
+        
+        QLabel#PlaceholderLabel {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        QPushButton#ModeToggle {
+            background-color: transparent;
+            border: 1px solid #43a047;
+            padding: 4px 12px;
+            color: #ddd;
+            border-radius: 4px;
+        }
+        QPushButton#ModeToggle:checked {
+            background-color: #2e7d32;
+            color: #fff;
+            font-weight: bold;
+        }
         """
 
     @staticmethod
@@ -222,6 +282,54 @@ class ThemeManager:
             color: #333333;
             font-family: "Segoe UI", "Roboto", sans-serif;
             font-size: 14px;
+        }
+        
+        /* SCROLL BAR (Light) */
+        QScrollBar:vertical {
+            border: none;
+            background: #e0e0e0;
+            width: 10px;
+            margin: 0px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle:vertical {
+            background: #b0b0b0;
+            min-height: 20px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle:vertical:hover {
+            background: #909090;
+        }
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+            border: none;
+            background: none;
+        }
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+            background: none;
+        }
+        
+        /* HORIZONTAL SCROLL BAR (Light) */
+        QScrollBar:horizontal {
+            border: none;
+            background: #e0e0e0;
+            height: 10px;
+            margin: 0px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle:horizontal {
+            background: #b0b0b0;
+            min-width: 20px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle:horizontal:hover {
+            background: #909090;
+        }
+        QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+            border: none;
+            background: none;
+        }
+        QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+            background: none;
         }
         
          /* COLLAPSIBLE BOX HEADER */
@@ -265,6 +373,21 @@ class ThemeManager:
         QPushButton:pressed {
             background-color: #e6e6e6;
         }
+        
+        QPushButton#PrimaryButton {
+            background-color: #4caf50;
+            color: white;
+            font-weight: bold;
+            border: 1px solid #388e3c;
+        }
+        QPushButton#PrimaryButton:hover {
+            background-color: #66bb6a;
+        }
+        QPushButton#PrimaryButton:disabled {
+            background-color: #e0e0e0;
+            color: #aaa;
+            border-color: #ccc;
+        }
 
         /* COMBO BOX */
         QComboBox {
@@ -294,9 +417,25 @@ class ThemeManager:
         QComboBox QAbstractItemView {
             background-color: #ffffff;
             selection-background-color: #43a047;
+            selection-color: #ffffff;
             border: 1px solid #d4d4d4;
             outline: none;
             border-radius: 8px;
+            padding: 4px;
+        }
+        QComboBox QAbstractItemView::item {
+            padding: 8px 10px;
+            min-height: 25px;
+            border-radius: 4px;
+            margin: 2px;
+        }
+        QComboBox QAbstractItemView::item:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        QComboBox QAbstractItemView::item:selected {
+            background-color: #43a047;
+            color: #ffffff;
         }
 
         /* SLIDERS */
@@ -340,5 +479,25 @@ class ThemeManager:
             font-weight: bold;
             color: #2e7d32;
             padding: 0 10px;
+        }
+        
+        QLabel#PlaceholderLabel {
+            color: #555;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        QPushButton#ModeToggle {
+            background-color: transparent;
+            border: 1px solid #43a047;
+            padding: 4px 12px;
+            color: #333;
+            border-radius: 4px;
+        }
+        QPushButton#ModeToggle:checked {
+            background-color: #43a047;
+            color: #fff;
+            font-weight: bold;
         }
         """
