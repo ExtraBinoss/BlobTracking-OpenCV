@@ -15,13 +15,22 @@ class ClickableComboBox(QComboBox):
     def eventFilter(self, obj, event):
         if self.lineEdit() and obj == self.lineEdit():
             if event.type() == QEvent.Type.MouseButtonRelease:
-                # Toggle popup on click
                 if self.view().isVisible():
                     self.hidePopup()
                 else:
                     self.showPopup()
                 return True
         return super().eventFilter(obj, event)
+
+    def mouseReleaseEvent(self, event):
+        # Handle clicks on the container (edges/padding)
+        if event.button() == Qt.MouseButton.LeftButton:
+             if self.view().isVisible():
+                 self.hidePopup()
+             else:
+                 self.showPopup()
+        else:
+             super().mouseReleaseEvent(event)
     
     def showPopup(self):
         """Override to ensure proper popup display."""
