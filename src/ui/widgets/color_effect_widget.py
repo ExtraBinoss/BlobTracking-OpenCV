@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                             QSlider, QPushButton, QColorDialog, QStackedWidget,
-                             QFormLayout, QSpinBox)
+                             QSlider, QStackedWidget)
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
 from src.ui.widgets.custom_combo import ClickableComboBox
+from src.ui.widgets.color_picker_widget import CompactColorButton
 
 class ColorEffectWidget(QWidget):
     """Modular widget for color/effect configuration."""
@@ -11,7 +11,6 @@ class ColorEffectWidget(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.current_color = QColor(255, 255, 255)
         self.init_ui()
     
     def init_ui(self):
@@ -37,10 +36,9 @@ class ColorEffectWidget(QWidget):
         solid_lay = QVBoxLayout(self.solid_page)
         solid_lay.setContentsMargins(0, 5, 0, 0)
         
-        self.color_btn = QPushButton("Pick Color")
-        self.color_btn.clicked.connect(self.pick_solid_color)
-        self.color_btn.setStyleSheet("background-color: #ffffff; color: #000;")
-        solid_lay.addWidget(self.color_btn)
+        self.solid_color_btn = CompactColorButton(QColor(255, 255, 255))
+        self.solid_color_btn.colorChanged.connect(self.emit_settings)
+        solid_lay.addWidget(self.solid_color_btn)
         self.stack.addWidget(self.solid_page)
         
         # --- Page 1: Effect (Presets) ---
@@ -103,10 +101,12 @@ class ColorEffectWidget(QWidget):
         custom_lay.addLayout(intensity_row)
         
         # Primary Color
-        self.custom_color_btn = QPushButton("Primary Color")
-        self.custom_color_btn.clicked.connect(self.pick_custom_color)
-        self.custom_color_btn.setStyleSheet("background-color: #43a047; color: #fff;")
-        custom_lay.addWidget(self.custom_color_btn)
+        color_row = QHBoxLayout()
+        color_row.addWidget(QLabel("Primary:"))
+        self.custom_color_btn = CompactColorButton(QColor(67, 160, 71))
+        self.custom_color_btn.colorChanged.connect(self.emit_settings)
+        color_row.addWidget(self.custom_color_btn, 1)
+        custom_lay.addLayout(color_row)
         
         self.stack.addWidget(self.custom_page)
         
@@ -122,25 +122,12 @@ class ColorEffectWidget(QWidget):
             self.stack.setCurrentIndex(2)
         self.emit_settings()
     
-    def pick_solid_color(self):
-        color = QColorDialog.getColor(self.current_color)
-        if color.isValid():
-            self.current_color = color
-            self.color_btn.setStyleSheet(f"background-color: {color.name()}; color: {'#000' if color.lightness() > 128 else '#fff'};")
-            self.emit_settings()
-    
-    def pick_custom_color(self):
-        color = QColorDialog.getColor()
-        if color.isValid():
-            self.custom_color_btn.setStyleSheet(f"background-color: {color.name()}; color: {'#000' if color.lightness() > 128 else '#fff'};")
-            self.emit_settings()
-    
     def get_settings(self):
         mode = self.mode_combo.currentText()
         settings = {"color_mode": mode}
         
         if mode == "Solid":
-            settings["solid_color"] = self.current_color.getRgb()[:3]
+            settings["solid_color"] = self.solid_color_btn.getRGB()
         elif mode == "Effect":
             settings["effect_name"] = self.effect_combo.currentText()
             settings["effect_speed"] = self.speed_slider.value()
@@ -148,12 +135,7 @@ class ColorEffectWidget(QWidget):
             settings["effect_name"] = self.custom_effect_combo.currentText()
             settings["effect_speed"] = self.custom_speed.value()
             settings["effect_intensity"] = self.intensity_slider.value()
-            # Parse color from button stylesheet (hack, but works)
-            style = self.custom_color_btn.styleSheet()
-            if "background-color:" in style:
-                hex_color = style.split("background-color:")[1].split(";")[0].strip()
-                c = QColor(hex_color)
-                settings["primary_color"] = c.getRgb()[:3]
+            settings["primary_color"] = self.custom_color_btn.getRGB()
         
         return settings
     

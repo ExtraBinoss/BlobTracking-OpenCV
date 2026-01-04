@@ -223,11 +223,15 @@ class CompactColorButton(QPushButton):
         self.setMinimumHeight(30)
     
     def _updateStyle(self):
+        # Button background IS the picked color
         text_color = '#000' if self._color.lightness() > 128 else '#fff'
         self.setStyleSheet(
+            f"QPushButton {{ "
             f"background-color: {self._color.name()}; "
             f"color: {text_color}; "
-            "border: 1px solid #555; border-radius: 4px; padding: 5px;"
+            "border: 1px solid #555; border-radius: 4px; padding: 8px 12px; "
+            "}"
+            f"QPushButton:hover {{ background-color: {self._color.lighter(110).name()}; }}"
         )
         self.setText(self._color.name().upper())
     

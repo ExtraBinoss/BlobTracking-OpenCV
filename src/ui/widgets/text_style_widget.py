@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                             QSlider, QPushButton, QColorDialog, QStackedWidget,
-                             QFormLayout, QSpinBox)
+                             QSlider)
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
 from src.ui.widgets.custom_combo import ClickableComboBox
+from src.ui.widgets.color_picker_widget import CompactColorButton
 
 class TextStyleWidget(QWidget):
     """Modular widget for text style configuration."""
@@ -11,7 +11,6 @@ class TextStyleWidget(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.text_color = QColor(255, 255, 255)
         self.init_ui()
     
     def init_ui(self):
@@ -57,10 +56,12 @@ class TextStyleWidget(QWidget):
         sub_lay.addLayout(size_row)
         
         # Text Color
-        self.color_btn = QPushButton("Text Color")
-        self.color_btn.clicked.connect(self.pick_color)
-        self.color_btn.setStyleSheet("background-color: #ffffff; color: #000;")
-        sub_lay.addWidget(self.color_btn)
+        color_row = QHBoxLayout()
+        color_row.addWidget(QLabel("Color:"))
+        self.text_color_btn = CompactColorButton(QColor(255, 255, 255))
+        self.text_color_btn.colorChanged.connect(self.emit_settings)
+        color_row.addWidget(self.text_color_btn, 1)
+        sub_lay.addLayout(color_row)
         
         layout.addWidget(self.sub_props)
         
@@ -71,20 +72,13 @@ class TextStyleWidget(QWidget):
         self.sub_props.setVisible(mode != "None")
         self.emit_settings()
     
-    def pick_color(self):
-        color = QColorDialog.getColor(self.text_color)
-        if color.isValid():
-            self.text_color = color
-            self.color_btn.setStyleSheet(f"background-color: {color.name()}; color: {'#000' if color.lightness() > 128 else '#fff'};")
-            self.emit_settings()
-    
     def get_settings(self):
         mode = self.mode_combo.currentText()
         return {
             "text_mode": mode,
             "text_position": self.pos_combo.currentText(),
             "text_size": self.size_slider.value(),
-            "text_color": self.text_color.getRgb()[:3]
+            "text_color": self.text_color_btn.getRGB()
         }
     
     def emit_settings(self, *args):

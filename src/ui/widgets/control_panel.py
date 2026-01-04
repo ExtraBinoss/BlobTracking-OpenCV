@@ -8,6 +8,7 @@ from src.core.enums import DetectionMode, VisualStyle
 from src.ui.widgets.custom_combo import ClickableComboBox
 from src.ui.widgets.color_effect_widget import ColorEffectWidget
 from src.ui.widgets.text_style_widget import TextStyleWidget
+from src.ui.widgets.color_picker_widget import CompactColorButton
 
 class ControlPanel(QWidget):
     params_changed = pyqtSignal(dict)
@@ -92,12 +93,15 @@ class ControlPanel(QWidget):
         self.color_detect_widget = QWidget()
         c_lay = QVBoxLayout(self.color_detect_widget)
         c_lay.setContentsMargins(0,0,0,0)
+        c_lay.setSpacing(8)
         
         # Target Color Button
-        self.target_color_btn = QPushButton("Pick Target Color")
-        self.target_color_btn.clicked.connect(self.open_color_picker)
-        self.target_color_btn.setStyleSheet("background-color: #ff0000; color: #fff; padding: 10px;")
-        c_lay.addWidget(self.target_color_btn)
+        target_row = QHBoxLayout()
+        target_row.addWidget(QLabel("Target:"))
+        self.target_color_btn = CompactColorButton(QColor(255, 0, 0))
+        self.target_color_btn.colorChanged.connect(self.emit_params)
+        target_row.addWidget(self.target_color_btn, 1)
+        c_lay.addLayout(target_row)
         
         # Tolerance Slider
         self.tolerance_slider = self.create_slider("Tolerance", 5, 100, 30, c_lay)
@@ -151,50 +155,53 @@ class ControlPanel(QWidget):
         text_lay.addWidget(self.text_widget)
         layout.addWidget(text_group)
         
-        # Geometry & Overlays
-        geom_group = QGroupBox("Geometry & Overlays")
-        g_lay = QVBoxLayout(geom_group)
-        g_lay.setSpacing(10)
+        # --- TRACES GROUP ---
+        trace_group = QGroupBox("Traces")
+        t_lay = QVBoxLayout(trace_group)
+        t_lay.setSpacing(8)
         
-        # Trace Settings
         self.trace_chk = QCheckBox("Show Traces")
         self.trace_chk.setChecked(True)
         self.trace_chk.toggled.connect(self.emit_visuals)
-        g_lay.addWidget(self.trace_chk)
+        t_lay.addWidget(self.trace_chk)
         
-        self.trace_thickness_slider = self.create_slider("Trace Thickness", 1, 10, 3, g_lay)
+        self.trace_thickness_slider = self.create_slider("Thickness", 1, 10, 3, t_lay)
         self.trace_thickness_slider.valueChanged.connect(self.emit_visuals)
         
-        self.trace_lifetime_slider = self.create_slider("Trace Lifetime", 5, 60, 20, g_lay)
+        self.trace_lifetime_slider = self.create_slider("Lifetime", 5, 60, 20, t_lay)
         self.trace_lifetime_slider.valueChanged.connect(self.emit_visuals)
         
-        # Trace Color (optional - uses shape color if not set)
         trace_color_row = QHBoxLayout()
-        trace_color_row.addWidget(QLabel("Trace Color:"))
-        from src.ui.widgets.color_picker_widget import CompactColorButton
+        trace_color_row.addWidget(QLabel("Color:"))
         self.trace_color_btn = CompactColorButton(QColor(0, 255, 0))
         self.trace_color_btn.colorChanged.connect(self.emit_visuals)
         trace_color_row.addWidget(self.trace_color_btn, 1)
-        g_lay.addLayout(trace_color_row)
+        t_lay.addLayout(trace_color_row)
         
-        # Centroid Dot
-        self.dot_chk = QCheckBox("Show Centroid Dot")
-        self.dot_chk.setChecked(True)
-        self.dot_chk.toggled.connect(self.emit_visuals)
-        g_lay.addWidget(self.dot_chk)
+        layout.addWidget(trace_group)
         
-        self.border_slider = self.create_slider("Border Thickness", 1, 10, 2, g_lay)
-        self.border_slider.valueChanged.connect(self.emit_visuals)
+        # --- BLOBS GROUP ---
+        blob_group = QGroupBox("Blobs")
+        b_lay = QVBoxLayout(blob_group)
+        b_lay.setSpacing(8)
         
         # Max Blobs
-        max_blobs_row = QHBoxLayout()
-        max_blobs_row.addWidget(QLabel("Max Blobs:"))
+        max_row = QHBoxLayout()
+        max_row.addWidget(QLabel("Max Count:"))
         self.max_blobs_spin = QSpinBox()
         self.max_blobs_spin.setRange(1, 100)
         self.max_blobs_spin.setValue(50)
         self.max_blobs_spin.valueChanged.connect(self.emit_visuals)
-        max_blobs_row.addWidget(self.max_blobs_spin, 1)
-        g_lay.addLayout(max_blobs_row)
+        max_row.addWidget(self.max_blobs_spin, 1)
+        b_lay.addLayout(max_row)
+        
+        self.border_slider = self.create_slider("Border", 1, 10, 2, b_lay)
+        self.border_slider.valueChanged.connect(self.emit_visuals)
+        
+        self.dot_chk = QCheckBox("Show Centroid Dot")
+        self.dot_chk.setChecked(True)
+        self.dot_chk.toggled.connect(self.emit_visuals)
+        b_lay.addWidget(self.dot_chk)
         
         # Fixed Size
         fs_row = QHBoxLayout()
@@ -208,9 +215,10 @@ class ControlPanel(QWidget):
         self.size_spin.setSuffix(" px")
         self.size_spin.valueChanged.connect(self.emit_visuals)
         fs_row.addWidget(self.size_spin)
-        g_lay.addLayout(fs_row)
+        b_lay.addLayout(fs_row)
         
-        layout.addWidget(geom_group)
+        layout.addWidget(blob_group)
+        
         layout.addStretch()
 
     def init_project_tab(self):
@@ -337,26 +345,10 @@ class ControlPanel(QWidget):
         self.edge_widget.setVisible(mode == DetectionMode.EDGES.value)
         self.color_detect_widget.setVisible(mode == DetectionMode.COLOR.value)
         self.emit_params()
-
-    def open_color_picker(self):
-        color = QColorDialog.getColor()
-        if color.isValid():
-            # Update button appearance
-            self.target_color_btn.setStyleSheet(
-                f"background-color: {color.name()}; "
-                f"color: {'#000' if color.lightness() > 128 else '#fff'}; "
-                "padding: 10px;"
-            )
-            # Store the target color for get_params
-            self._target_color = color
-            self.emit_params()
     
     def _get_target_hsv_range(self):
-        """Convert stored target color and tolerance to HSV range."""
-        if not hasattr(self, '_target_color'):
-            return 0, 179, 0, 255, 0, 255  # Full range default
-        
-        color = self._target_color
+        """Convert target color button's color and tolerance to HSV range."""
+        color = self.target_color_btn.getColor()
         h, s, v, _ = color.getHsv()
         h = int(h / 2)  # Qt uses 0-359, OpenCV uses 0-179
         tol = self.tolerance_slider.value()
