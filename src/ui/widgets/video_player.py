@@ -72,29 +72,35 @@ class VideoPlayer(QWidget):
         self.ambient_label.setScaledContents(True) # Hardware/Qt scaling of pixmap
         self.video_layout.addWidget(self.ambient_label, 0, 0)
 
-        # Placeholder Container (Center Aligned)
+        # 1. Main Video Display Label (Layer 0, on top of ambient)
+        self.video_display_label = QLabel()
+        self.video_display_label.setObjectName("MainVideoDisplay")
+        self.video_display_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.video_display_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.video_layout.addWidget(self.video_display_label, 0, 0)
+
+        # 2. Placeholder Container (Layer 1, Center Aligned, Visible initially)
         self.placeholder_widget = QWidget()
         self.placeholder_layout = QVBoxLayout(self.placeholder_widget)
         self.placeholder_layout.setContentsMargins(0, 0, 0, 0)
-        self.placeholder_layout.setSpacing(20) # Space between text and button
+        self.placeholder_layout.setSpacing(10) # Space between text and button
         self.placeholder_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Layer 1: Status Label (Top)
-        self.image_label = QLabel("No Video Loaded")
-        self.image_label.setObjectName("VideoDisplay")
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # self.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored) # conflict with VBox
-        self.image_label.setStyleSheet("""
-            QLabel#VideoDisplay {
+        # Status Label (Top of placeholder)
+        self.placeholder_label = QLabel("No Video Loaded")
+        self.placeholder_label.setObjectName("PlaceholderLabel")
+        self.placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.placeholder_label.setStyleSheet("""
+            QLabel#PlaceholderLabel {
                 color: rgba(255, 255, 255, 0.6);
                 font-size: 18px;
                 font-weight: 500;
                 letter-spacing: 1px;
             }
         """)
-        self.placeholder_layout.addWidget(self.image_label)
+        self.placeholder_layout.addWidget(self.placeholder_label)
 
-        # Layer 2: Big Select Button (Bottom)
+        # Big Select Button (Bottom of placeholder)
         self.big_select_btn = QPushButton("Select Video File")
         self.big_select_btn.setObjectName("BigSelectButton")
         self.big_select_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -254,20 +260,20 @@ class VideoPlayer(QWidget):
         self.debug_toggled.emit(is_debug)
 
     def update_image(self, qimg, ambient_qimg):
-        # Hide Big Select Button if it's visible
-        if self.big_select_btn.isVisible():
-            self.big_select_btn.setVisible(False)
-
+        # Hide Placeholder if it's visible
+        if self.placeholder_widget.isVisible():
+            self.placeholder_widget.setVisible(False)
+            
         # OPTIMIZED AMBIENT:
         # Pre-processed ambient frame (small, blurred, raw) is provided
         self.ambient_label.setPixmap(QPixmap.fromImage(ambient_qimg))
         
         # Normal Video Update
-        if self.image_label.size().width() > 0 and self.image_label.size().height() > 0:
-            scaled = qimg.scaled(self.image_label.size(), 
+        if self.video_display_label.size().width() > 0 and self.video_display_label.size().height() > 0:
+            scaled = qimg.scaled(self.video_display_label.size(), 
                                Qt.AspectRatioMode.KeepAspectRatio, 
                                Qt.TransformationMode.SmoothTransformation)
-            self.image_label.setPixmap(QPixmap.fromImage(scaled))
+            self.video_display_label.setPixmap(QPixmap.fromImage(scaled))
 
     def set_duration(self, total_frames):
         self.total_frames = total_frames

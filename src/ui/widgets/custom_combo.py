@@ -23,3 +23,7 @@ class ClickableComboBox(QComboBox):
                     self.showPopup()
                 return True
         return super().eventFilter(obj, event)
+
+    def wheelEvent(self, event):
+        # Disable scrolling
+        event.ignore()
