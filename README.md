@@ -2,6 +2,8 @@
 
 **BlobTrack** is a computer vision tool designed to create generative visuals from video content. By leveraging the power of OpenCV, it extracts organic shapes and movements from source videos, allowing for real-time manipulation and high-quality export for VJ loops, motion graphics, and creative coding projects.
 
+![BlobTrack](docs/gif/blobtrack-gif.gif)
+
 ---
 
 > **Author's Note**  
@@ -70,6 +72,10 @@ If you prefer to set it up manually:
    - Use the **Visuals** tab to apply colors, shapes, and effects.
 
 4. **Export**: Once you're happy with the look, click **"Export Processed Video"**. 
+
+## Documentation
+
+Documentation is available in the [docs](docs) directory. Or as a static page [here](https://extrabinoss.github.io/BlobTracking-OpenCV/)
 
 ## 📝 License
 
