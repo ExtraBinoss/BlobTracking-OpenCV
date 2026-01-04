@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
         self.control_panel.emit_visuals() # Ensure visuals are synced
         
         self.processor.start()
-        self.video_player.image_label.setText("Loading...")
+        self.video_player.set_status_message("Loading...")
         self.video_player.setFocus() # Ensure it captures keys
 
     def start_export(self):
@@ -122,11 +122,11 @@ class MainWindow(QMainWindow):
         self.control_panel.emit_params()
         self.control_panel.emit_visuals()
         
-        self.processor.finished.connect(lambda msg: self.video_player.image_label.setText(msg))
+        self.processor.finished.connect(lambda msg: self.video_player.set_status_message(msg))
         # We could add a progress dialog here.
         
         self.processor.start()
-        self.video_player.image_label.setText("Exporting...")
+        self.video_player.set_status_message("Exporting...")
 
     def update_processor_params(self, params):
         if self.processor:

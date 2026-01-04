@@ -290,6 +290,10 @@ class VideoPlayer(QWidget):
             self.updating_slider = False
             self.update_time_label(frame_idx)
 
+    def set_status_message(self, message):
+        self.placeholder_label.setText(message)
+        self.placeholder_widget.setVisible(True)
+
     def update_time_label(self, current_frame):
         self.time_label.setText(f"{current_frame} / {self.total_frames}")
 
