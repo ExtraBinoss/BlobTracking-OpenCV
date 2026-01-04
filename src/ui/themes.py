@@ -68,18 +68,19 @@ class ThemeManager:
         QGroupBox {
             border: 1px solid #333;
             border-radius: 8px;
-            margin-top: 1.5em; /* Space for title */
-            background-color: #1e1e1e; /* Slightly lighter card */
-            padding-top: 10px;
+            margin-top: 24px; 
+            background-color: transparent; /* Transparent BG */
+            padding-top: 15px; /* More breathing room */
+            padding-bottom: 5px;
         }
         QGroupBox::title {
             subcontrol-origin: margin;
             subcontrol-position: top left;
             padding: 0 5px;
             left: 10px;
-            color: #81c784; /* Soft Green */
+            color: #81c784; 
             font-weight: bold;
-            background-color: #121212; /* Matches global bg to look floating */
+            background-color: transparent; 
         }
 
         /* BUTTONS */
@@ -152,7 +153,7 @@ class ThemeManager:
             border-radius: 6px;
             padding: 4px;
         }
-
+        
         /* CHECKBOX */
         QCheckBox {
             spacing: 8px;
@@ -172,8 +173,6 @@ class ThemeManager:
         QCheckBox::indicator:checked {
             background-color: #2e7d32; /* Green Fill */
             border-color: #2e7d32;
-            /* Note: Fusion style might not draw checkmark if we override indicator. 
-               We use a distinct solid green square to indicate active. */
         }
         QCheckBox::indicator:unchecked:hover {
             background: #333;
@@ -199,7 +198,10 @@ class ThemeManager:
         }
         QSlider::handle:horizontal:hover {
             background: #fff;
-            transform: scale(1.1);
+            width: 16px;
+            height: 16px;
+            margin: -6px 0;
+            /* Removed transform */
         }
 
         /* LABELS & INPUTS */
@@ -258,7 +260,7 @@ class ThemeManager:
             border-color: #2e7d32;
         }
         
-        /* TABS (If QTabWidget is used) */
+        /* TABS */
         QTabWidget::pane {
             border: 1px solid #333;
             background: #1e1e1e;

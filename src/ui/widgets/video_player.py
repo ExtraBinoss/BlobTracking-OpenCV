@@ -24,6 +24,11 @@ class VideoPlayer(QWidget):
         
         self.init_ui()
 
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.emit_toggle_play()
+        super().mouseDoubleClickEvent(event)
+
     def get_icon(self, name):
         # fast simple custom icons using QPainter
         pix = QPixmap(24, 24)

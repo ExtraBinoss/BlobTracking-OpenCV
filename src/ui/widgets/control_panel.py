@@ -200,10 +200,24 @@ class ControlPanel(QWidget):
         
         # Fill & Dot options
         opts_row = QHBoxLayout()
+        
+        # Fill Layout
+        fill_col = QVBoxLayout()
+        fill_col.setSpacing(0)
+        
         self.fill_chk = QCheckBox("Fill Shape")
-        self.fill_chk.setChecked(False) # Default Hollow
+        self.fill_chk.setChecked(False) 
+        self.fill_chk.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.fill_chk.toggled.connect(self.emit_visuals)
-        opts_row.addWidget(self.fill_chk)
+        self.fill_chk.toggled.connect(self.toggle_fill_opacity_slider)
+        fill_col.addWidget(self.fill_chk)
+        
+        # Opacity Slider (create_slider adds to layout)
+        self.fill_opacity_slider = self.create_slider("Fill Opacity", 0, 100, 50, fill_col)
+        self.fill_opacity_slider.setVisible(False)
+        self.fill_opacity_slider.valueChanged.connect(self.emit_visuals)
+        
+        opts_row.addLayout(fill_col)
 
         self.dot_chk = QCheckBox("Show Dot")
         self.dot_chk.setChecked(False) # Default No Dot
@@ -293,6 +307,7 @@ class ControlPanel(QWidget):
         slider = QSlider(Qt.Orientation.Horizontal)
         slider.setRange(min_val, max_val)
         slider.setValue(default)
+        slider.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         slider.valueChanged.connect(self.emit_params)
         slider.valueChanged.connect(lambda v, vl=val_lbl: vl.setText(str(v)))
         lay.addWidget(slider)
@@ -327,6 +342,7 @@ class ControlPanel(QWidget):
             "fixed_size": self.size_spin.value(),
             "show_dot": self.dot_chk.isChecked(),
             "fill_shape": self.fill_chk.isChecked(),
+            "fill_opacity": self.fill_opacity_slider.value() / 100.0,
             "show_traces": self.trace_chk.isChecked(),
             "border_thickness": self.border_slider.value(),
             "trace_thickness": self.trace_thickness_slider.value(),
@@ -402,3 +418,8 @@ class ControlPanel(QWidget):
         else:
              # Mac
             subprocess.Popen(['open', folder])
+
+    def toggle_fill_opacity_slider(self, checked):
+        self.fill_opacity_slider.setVisible(checked)
+        # Force layout update if needed
+        self.updateGeometry()

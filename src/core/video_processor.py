@@ -95,6 +95,7 @@ class VideoProcessor(QThread):
         visualizer.fixed_size = settings.get("fixed_size", 50)
         visualizer.show_center_dot = settings.get("show_dot", False)
         visualizer.fill_shape = settings.get("fill_shape", False)
+        visualizer.fill_opacity = settings.get("fill_opacity", 0.5)
         
         # Overlays
         visualizer.show_traces = settings.get("show_traces", True)

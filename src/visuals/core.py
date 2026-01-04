@@ -39,6 +39,7 @@ class Visualizer:
         # Settings
         self.show_center_dot = False
         self.fill_shape = False # Default hollow
+        self.fill_opacity = 0.5 # Default 50%
         self.fixed_size = 50 
         self.glow_enabled = True
         
@@ -66,12 +67,18 @@ class Visualizer:
     def set_text_strategy(self, strategy):
         self.text_strategy = strategy
 
-    def draw(self, frame, objects, shape_type="square", frame_idx=0): # shape_type kept for legacy signal compatibility for now, but strategy overrides
+    def draw(self, frame, objects, shape_type="square", frame_idx=0): 
         # simple objects for trace tracking
         simple_objects = {oid: (o[0], o[1]) for oid, o in objects.items()}
         self.state.update(simple_objects)
         
-        overlay = frame.copy()
+        glow_overlay = frame.copy()
+        
+        # Prepare fill overlay if needed
+        use_fill_opacity = self.fill_shape and (self.fill_opacity < 1.0)
+        fill_overlay = None
+        if use_fill_opacity:
+            fill_overlay = frame.copy()
         
         # Limit to max_blobs
         drawn_count = 0
@@ -79,19 +86,12 @@ class Visualizer:
             if drawn_count >= self.max_blobs:
                 break
             drawn_count += 1
-            x, y, radius = data # Centroid and radius from tracker
+            x, y, radius = data 
             
-            # 1. Geometry
-            # We construct a mock rect from the radius for the strategy
-            # or pass the centroid. 
-            # Strategy expects rect (x,y,w,h) usually.
             mock_rect = (x - radius, y - radius, radius*2, radius*2)
             gx, gy, gw, gh = self.shape_strategy.get_geometry(mock_rect, self.fixed_size)
             
-            # 2. Color
             color = self.color_strategy.get_color(obj_id, frame_idx)
-            
-            # 3. Text
             text = self.text_strategy.get_text(obj_id, frame_idx)
 
             # Draw Trace
@@ -101,42 +101,46 @@ class Visualizer:
                     limit = min(len(trace), self.trace_lifetime)
                     trace_col = self.trace_color if self.trace_color else color
                     for i in range(1, limit):
-                        # Fade thickness based on age
                         age_factor = 1 - (i / limit)
                         thickness = max(1, int(self.trace_thickness * age_factor * 1.5))
                         cv2.line(frame, trace[i - 1], trace[i], trace_col, thickness)
 
             # Draw Shape
-            # We use gw/gh to determine radius if circle
             draw_radius = gw // 2
-            
             center = (gx + draw_radius, gy + draw_radius)
-            
-            # If "square" was passed from UI, we might want to respect that preference 
-            # combined with our strategy? 
-            # For now let's assume if it's "circle" we draw circle, else square.
-            # But "shape_type" comes from the enum...
-            
             is_circle = (shape_type.lower() == "circle")
             
-            # Determine thickness: -1 for fill, border_thickness for hollow
-            thickness = -1 if self.fill_shape else self.border_thickness
-            
-            if is_circle:
-                cv2.circle(frame, center, draw_radius, color, thickness)
-                if self.glow_enabled:
-                     # If hollow, glow should also be hollow (thicker border)
-                     # If filled, glow is filled
-                     glow_thick = -1 if self.fill_shape else (self.border_thickness + 4)
-                     cv2.circle(overlay, center, draw_radius + 5, color, glow_thick)
+            # --- FILL LOGIC ---
+            if self.fill_shape:
+                # If opacity used, draw filled on fill_overlay, and border on frame
+                if use_fill_opacity:
+                    if is_circle:
+                        cv2.circle(fill_overlay, center, draw_radius, color, -1)
+                        cv2.circle(frame, center, draw_radius, color, self.border_thickness)
+                    else:
+                        cv2.rectangle(fill_overlay, (gx, gy), (gx + gw, gy + gh), color, -1)
+                        cv2.rectangle(frame, (gx, gy), (gx + gw, gy + gh), color, self.border_thickness)
+                else:
+                    # Solid fill on frame (thickness = -1)
+                    if is_circle:
+                        cv2.circle(frame, center, draw_radius, color, -1)
+                    else:
+                        cv2.rectangle(frame, (gx, gy), (gx + gw, gy + gh), color, -1)
             else:
-                top_left = (gx, gy)
-                bottom_right = (gx + gw, gy + gh)
-                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                if self.glow_enabled:
-                    glow_thick = -1 if self.fill_shape else (self.border_thickness + 4)
-                    # Adjust rect for glow size
-                    cv2.rectangle(overlay, (gx - 2, gy - 2), (gx + gw + 2, gy + gh + 2), color, glow_thick)
+                # Hollow - just border
+                if is_circle:
+                    cv2.circle(frame, center, draw_radius, color, self.border_thickness)
+                else:
+                    cv2.rectangle(frame, (gx, gy), (gx + gw, gy + gh), color, self.border_thickness)
+
+            # --- GLOW LOGIC ---
+            if self.glow_enabled:
+                # If hollow, glow is hollow. If filled, glow is filled.
+                glow_thick = -1 if self.fill_shape else (self.border_thickness + 4)
+                if is_circle:
+                     cv2.circle(glow_overlay, center, draw_radius + 5, color, glow_thick)
+                else:
+                    cv2.rectangle(glow_overlay, (gx - 2, gy - 2), (gx + gw + 2, gy + gh + 2), color, glow_thick)
             
             # Draw Center Dot
             if self.show_center_dot:
@@ -144,34 +148,28 @@ class Visualizer:
 
             # Draw Text
             if text:
-                # Calculate font scale from text_size (approx conversion)
-                font_scale = self.text_size / 24.0  # 24 is baseline
+                font_scale = self.text_size / 24.0
                 thickness = max(1, int(self.text_size / 12))
                 
-                # Calculate position based on self.text_position
+                # Position logic...
                 tx, ty = gx + gw + 5, gy + 10 # Default 'Right'
-                
                 tp = self.text_position.lower()
-                if tp == "top":
-                    tx = gx
-                    ty = gy - 10
-                elif tp == "bottom":
-                    tx = gx
-                    ty = gy + gh + 20
+                if tp == "top": tx, ty = gx, gy - 10
+                elif tp == "bottom": tx, ty = gx, gy + gh + 20
                 elif tp == "center":
-                    # Rough centering
                     text_dims, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
-                    tx = center[0] - text_dims[0] // 2
-                    ty = center[1] + text_dims[1] // 2
+                    tx, ty = center[0] - text_dims[0] // 2, center[1] + text_dims[1] // 2
                 
-                # BGR color (cv2 uses BGR)
                 text_color_bgr = (self.text_color[2], self.text_color[1], self.text_color[0])
                 cv2.putText(frame, text, (tx, ty), 
                             cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color_bgr, thickness)
 
-        # Apply overlay
+        # Merge Layers
+        if use_fill_opacity:
+            cv2.addWeighted(fill_overlay, self.fill_opacity, frame, 1.0 - self.fill_opacity, 0, frame)
+            
         if self.glow_enabled:
             alpha = 0.3
-            cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+            cv2.addWeighted(glow_overlay, alpha, frame, 1 - alpha, 0, frame)
         
         return frame
