@@ -3,7 +3,7 @@ import numpy as np
 import os
 from PyQt6.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition
 from PyQt6.QtGui import QImage
-from src.tracking import BlobDetector, CentroidTracker
+from src.core.tracking import BlobDetector, CentroidTracker
 from src.visuals import VisualStateManager, Visualizer
 from src.visuals.strategies import (
     WhiteColorStrategy, RainbowColorStrategy, CycleColorStrategy,
