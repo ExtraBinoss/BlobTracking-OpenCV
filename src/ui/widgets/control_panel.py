@@ -288,6 +288,7 @@ class ControlPanel(QWidget):
         self.open_folder_btn = QPushButton("Open File Location")
         self.open_folder_btn.clicked.connect(self.open_file_location)
         self.open_folder_btn.setEnabled(False) 
+        self.open_folder_btn.setToolTip("Open folder containing the source or processed video")
         a_lay.addWidget(self.open_folder_btn)
         
         layout.addWidget(action_group)
@@ -379,6 +380,7 @@ class ControlPanel(QWidget):
         if fname:
             self.file_label.setText(fname)
             self.export_btn.setEnabled(True)
+            self.open_folder_btn.setEnabled(True)
             self.file_selected.emit(fname)
 
     def on_mode_changed(self, mode):
@@ -411,25 +413,25 @@ class ControlPanel(QWidget):
         if not path or not os.path.exists(path):
             return
             
-        export_path = f"{os.path.splitext(path)[0]}_processed.mp4"
-        if not os.path.exists(export_path):
-             # Try input dir if export doesn't exist
-             folder = os.path.dirname(path)
-        else:
-             folder = os.path.dirname(export_path)
+        # Check for the tracked version first
+        base, _ = os.path.splitext(path)
+        tracked_path = f"{base}_tracked.mp4"
+        
+        target_path = tracked_path if os.path.exists(tracked_path) else path
+        folder = os.path.dirname(target_path)
              
-        # OS Agnostic Open
-         # OS Agnostic Open
         if os.name == 'nt':
             try:
-                os.startfile(folder)
+                # On Windows, we can use explorer /select to highlight the file
+                subprocess.run(['explorer', '/select,', os.path.normpath(target_path)])
             except Exception as e:
                 print(f"Error opening folder: {e}")
+                os.startfile(folder)
         elif os.name == 'posix':
             subprocess.Popen(['xdg-open', folder])
         else:
-             # Mac
-            subprocess.Popen(['open', folder])
+            # Mac
+            subprocess.Popen(['open', '-R', target_path])
 
     def toggle_fill_opacity_slider(self, checked):
         self.fill_opacity_slider.setVisible(checked)

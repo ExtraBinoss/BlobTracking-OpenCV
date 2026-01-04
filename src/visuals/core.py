@@ -72,9 +72,11 @@ class Visualizer:
         simple_objects = {oid: (o[0], o[1]) for oid, o in objects.items()}
         self.state.update(simple_objects)
         
-        glow_overlay = frame.copy()
-        
-        # Prepare fill overlay if needed
+        # Prepare overlays only if needed to save performance
+        glow_overlay = None
+        if self.glow_enabled:
+            glow_overlay = frame.copy()
+            
         use_fill_opacity = self.fill_shape and (self.fill_opacity < 1.0)
         fill_overlay = None
         if use_fill_opacity:
@@ -134,7 +136,7 @@ class Visualizer:
                     cv2.rectangle(frame, (gx, gy), (gx + gw, gy + gh), color, self.border_thickness)
 
             # --- GLOW LOGIC ---
-            if self.glow_enabled:
+            if self.glow_enabled and glow_overlay is not None:
                 # If hollow, glow is hollow. If filled, glow is filled.
                 glow_thick = -1 if self.fill_shape else (self.border_thickness + 4)
                 if is_circle:
@@ -165,10 +167,10 @@ class Visualizer:
                             cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color_bgr, thickness)
 
         # Merge Layers
-        if use_fill_opacity:
+        if use_fill_opacity and fill_overlay is not None:
             cv2.addWeighted(fill_overlay, self.fill_opacity, frame, 1.0 - self.fill_opacity, 0, frame)
             
-        if self.glow_enabled:
+        if self.glow_enabled and glow_overlay is not None:
             alpha = 0.3
             cv2.addWeighted(glow_overlay, alpha, frame, 1 - alpha, 0, frame)
         

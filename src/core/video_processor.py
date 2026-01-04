@@ -199,25 +199,22 @@ class VideoProcessor(QThread):
                     break
 
             # --- AMBIENT FRAME GENERATION (RAW) ---
-            # 1. Resize small (averaging)
-            # 2. Blur (smoothing)
-            # using RAW 'frame'
-            amb_small = cv2.resize(frame, (40, 22), interpolation=cv2.INTER_AREA)
-            amb_blurred = cv2.GaussianBlur(amb_small, (21, 21), 0)
-            amb_rgb = cv2.cvtColor(amb_blurred, cv2.COLOR_BGR2RGB)
-            ah, aw, ach = amb_rgb.shape
-            amb_bytes = ach * aw
-            qt_ambient = QImage(amb_rgb.data, aw, ah, amb_bytes, QImage.Format.Format_RGB888).copy()
+            # Only generate for preview to save processing during export
+            qt_ambient = None
+            if self.is_preview:
+                amb_small = cv2.resize(frame, (40, 22), interpolation=cv2.INTER_AREA)
+                amb_blurred = cv2.GaussianBlur(amb_small, (21, 21), 0)
+                amb_rgb = cv2.cvtColor(amb_blurred, cv2.COLOR_BGR2RGB)
+                ah, aw, ach = amb_rgb.shape
+                amb_bytes = ach * aw
+                qt_ambient = QImage(amb_rgb.data, aw, ah, amb_bytes, QImage.Format.Format_RGB888).copy()
 
             # --- MAIN DETECTION & TRACKING ---
             # Detection
-            # Adjusted unpacking for new return signature
             rects, _, detection_data = self.detector.detect(frame)
             if isinstance(detection_data, tuple):
-                 # New Style: (thresh, debug_frames)
                  thresh, debug_frames = detection_data
             else:
-                 # Fallback just in case
                  thresh = detection_data
                  debug_frames = {}
 
@@ -232,49 +229,44 @@ class VideoProcessor(QThread):
             objects = tracker.update(rects)
             
             # Prepare Output
-            if self.is_preview and self.debug_mode:
-                # Show the most relevant debug frame
-                # If diluted exists, it's the final mask used for contours
-                if 'dilated' in debug_frames:
-                    debug_img = debug_frames['dilated']
-                elif 'color_mask' in debug_frames:
-                    debug_img = debug_frames['color_mask']
-                elif 'edges' in debug_frames:
-                     debug_img = debug_frames['edges']
-                elif 'threshold' in debug_frames:
-                     debug_img = debug_frames['threshold']
+            if self.is_preview:
+                if self.debug_mode:
+                    # Show the most relevant debug frame
+                    if 'dilated' in debug_frames:
+                        debug_img = debug_frames['dilated']
+                    elif 'color_mask' in debug_frames:
+                        debug_img = debug_frames['color_mask']
+                    elif 'edges' in debug_frames:
+                         debug_img = debug_frames['edges']
+                    elif 'threshold' in debug_frames:
+                         debug_img = debug_frames['threshold']
+                    else:
+                         debug_img = thresh
+                    
+                    if len(debug_img.shape) == 2:
+                        out_frame = cv2.cvtColor(debug_img, cv2.COLOR_GRAY2BGR)
+                    else:
+                        out_frame = debug_img
                 else:
-                     debug_img = thresh
-                
-                # Ensure it is BGR for Consistency
-                if len(debug_img.shape) == 2:
-                    out_frame = cv2.cvtColor(debug_img, cv2.COLOR_GRAY2BGR)
-                else:
-                    out_frame = debug_img
-            else:
-                out_frame = visualizer.draw(frame, objects, shape_type=self.shape_type, frame_idx=frame_idx)
+                    out_frame = visualizer.draw(frame, objects, shape_type=self.shape_type, frame_idx=frame_idx)
 
-            # Convert for Qt (BGR -> RGB)
-            rgb_image = cv2.cvtColor(out_frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgb_image.shape
-            bytes_per_line = ch * w
+                # Convert for Qt (BGR -> RGB)
+                rgb_image = cv2.cvtColor(out_frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = rgb_image.shape
+                bytes_per_line = ch * w
+                
+                # COPY the data to ensure it persists
+                qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888).copy()
+                self.frame_update.emit(qt_image, qt_ambient)
             
-            # COPY the data to ensure it persists after the numpy array is garbage collected
-            # Fixes Segmentation Fault
-            qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888).copy()
-            
-            self.frame_update.emit(qt_image, qt_ambient)
             self.current_frame_changed.emit(frame_idx)
 
             if not self.is_preview and out:
-                if self.debug_mode: # If debugging during export, re-draw "clean" for export?
-                     # For now, export what is seen or force clean. 
-                     # Usually export is clean.
-                     clean_frame = visualizer.draw(frame, objects, shape_type=self.shape_type, frame_idx=frame_idx)
-                     out.write(clean_frame)
-                else:
-                    out.write(out_frame)
+                # During export, always draw a clean frame (respecting current visualization settings)
+                clean_frame = visualizer.draw(frame, objects, shape_type=self.shape_type, frame_idx=frame_idx)
+                out.write(clean_frame)
                 
+                # Emit progress less frequently if needed, but 1% granularity is fine
                 progress = int((frame_idx / total_frames) * 100)
                 self.progress_update.emit(progress)
 
