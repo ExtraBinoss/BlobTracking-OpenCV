@@ -125,15 +125,18 @@ class Visualizer:
             if is_circle:
                 cv2.circle(frame, center, draw_radius, color, thickness)
                 if self.glow_enabled:
-                     # Glow is always hollow or filled? Usually glow is soft fill, but let's keep it subtle
-                     glow_thick = -1
+                     # If hollow, glow should also be hollow (thicker border)
+                     # If filled, glow is filled
+                     glow_thick = -1 if self.fill_shape else (self.border_thickness + 4)
                      cv2.circle(overlay, center, draw_radius + 5, color, glow_thick)
             else:
                 top_left = (gx, gy)
                 bottom_right = (gx + gw, gy + gh)
                 cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                 if self.glow_enabled:
-                    cv2.rectangle(overlay, (gx - 2, gy - 2), (gx + gw + 2, gy + gh + 2), color, -1)
+                    glow_thick = -1 if self.fill_shape else (self.border_thickness + 4)
+                    # Adjust rect for glow size
+                    cv2.rectangle(overlay, (gx - 2, gy - 2), (gx + gw + 2, gy + gh + 2), color, glow_thick)
             
             # Draw Center Dot
             if self.show_center_dot:

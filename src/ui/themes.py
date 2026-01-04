@@ -153,6 +153,32 @@ class ThemeManager:
             padding: 4px;
         }
 
+        /* CHECKBOX */
+        QCheckBox {
+            spacing: 8px;
+            color: #ccc;
+        }
+        QCheckBox::indicator {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #2c2c2c;
+        }
+        QCheckBox::indicator:hover {
+            border-color: #81c784;
+            background: #353535;
+        }
+        QCheckBox::indicator:checked {
+            background-color: #2e7d32; /* Green Fill */
+            border-color: #2e7d32;
+            /* Note: Fusion style might not draw checkmark if we override indicator. 
+               We use a distinct solid green square to indicate active. */
+        }
+        QCheckBox::indicator:unchecked:hover {
+            background: #333;
+        }
+
         /* SLIDERS */
         QSlider::groove:horizontal {
             background: #333;
