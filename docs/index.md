@@ -2,7 +2,7 @@
 
 **BlobTrack** is a computer vision tool designed to create generative visuals from video content. By leveraging the power of OpenCV, it extracts organic shapes and movements from source videos, allowing for real-time manipulation and high-quality export for VJ loops, motion graphics, and creative coding projects.
 
-![BlobTrack Interface]([Insert image of the main application window running here])
+![BlobTrack Interface](images/main-interface.png)
 
 ---
 

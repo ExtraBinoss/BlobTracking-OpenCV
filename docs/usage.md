@@ -6,7 +6,7 @@ This guide will walk you through the entire workflow of creating visuals with Bl
 
 The BlobTrack interface is divided into two main areas: the **Preview Window** on the left and the **Control Panel** on the right.
 
-![Interface Overview]([Insert image of the full interface here])
+![Interface Overview](images/main-interface.png)
 
 ## 2. Loading a Video
 
@@ -15,14 +15,13 @@ To start, you need a source video file. Ideally, choose footage with good contra
 1.  Click the **Select Video File** button at the top of the Control Panel.
 2.  Navigate to your video file (MP4, AVI, MOV, etc.) and open it.
 3.  The video will begin playing in loop mode automatically.
-
 ---
 
 ## 3. Detection Settings
 
 The **Detection** tab controls *what* part of the video is turned into blobs.
 
-![Detection Tab]([Insert image of the Detection tab controls here])
+![Detection Tab](images/detection-tab.png)
 
 ### Detection Modes
 Select one of the following modes from the dropdown:
@@ -43,7 +42,7 @@ Select one of the following modes from the dropdown:
 
 The **Visuals** tab controls *how* the detected blobs look.
 
-![Visuals Tab]([Insert image of the Visuals tab controls here])
+![Visuals Tab](images/visuals-tab.png)
 
 ### Shape & Outline
 *   **Fill Shapes**: Toggles whether blobs are solid or just outlines.
@@ -68,4 +67,4 @@ Once you are happy with your visual:
     *   *Note: This might be slower than real-time playback depending on your settings.*
 4.  Once finished, you will have a high-quality video file of your creation!
 
-![Export Dialog]([Insert image of the export progress or button here])
+![Export Dialog](images/export-dialog.png)
