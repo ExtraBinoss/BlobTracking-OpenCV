@@ -5,8 +5,9 @@ site_url: https://ExtraBinoss.github.io/BlobTracking-OpenCV/
 
 theme:
   name: material
+  logo: assets/logo_blobtrack.png
+  favicon: assets/logo_blobtrack.png
   features:
-    - navigation.tabs
     - navigation.sections
     - navigation.expand
     - navigation.top
@@ -14,14 +15,14 @@ theme:
     - content.code.copy
   palette:
     - scheme: default
-      primary: indigo
-      accent: purple
+      primary: green
+      accent: light-green
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: purple
+      primary: green
+      accent: light-green
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -30,6 +31,7 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - User Guide: usage.md
+  - How It Works: how-it-works.md
 
 markdown_extensions:
   - admonition

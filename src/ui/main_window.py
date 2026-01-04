@@ -92,6 +92,7 @@ class MainWindow(QMainWindow):
         self.video_player.seek_requested.connect(self.seek_video)
         self.video_player.debug_toggled.connect(self.toggle_debug)
         self.video_player.file_selection_requested.connect(self.control_panel.select_file)
+        self.video_player.close_video_requested.connect(self.reset_video)
 
     def start_preview(self, path):
         if self.processor:
@@ -116,6 +117,7 @@ class MainWindow(QMainWindow):
         
         self.processor.start()
         self.video_player.set_status_message("Loading...")
+        self.video_player.set_video_loaded() # Show close button
         self.video_player.setFocus() # Ensure it captures keys
 
     def start_export(self):
@@ -193,3 +195,27 @@ class MainWindow(QMainWindow):
             self.video_player.emit_toggle_play()
         else:
             super().keyPressEvent(event)
+
+    def reset_video(self):
+        """Stops the current video and resets the UI to the initial state."""
+        if self.processor:
+            # Disconnect signals to prevent late updates from hiding the placeholder
+            try:
+                self.processor.frame_update.disconnect()
+                self.processor.duration_changed.disconnect()
+                self.processor.current_frame_changed.disconnect()
+                self.processor.finished.disconnect()
+            except Exception:
+                pass # Signals might not be connected or already disconnected
+            
+            self.processor.stop()
+            self.processor.wait()
+            self.processor = None
+            
+        self.video_player.set_status_message("No Video Loaded")
+        # Clear the display
+        self.video_player.video_display_label.clear()
+        self.video_player.ambient_label.clear()
+        self.video_player.slider.setValue(0)
+        self.video_player.time_label.setText("0:00 / 0:00")
+        self.control_panel.file_label.setText("No file selected")

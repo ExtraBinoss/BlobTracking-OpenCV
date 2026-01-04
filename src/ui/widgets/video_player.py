@@ -9,6 +9,7 @@ class VideoPlayer(QWidget):
     seek_requested = pyqtSignal(int)
     debug_toggled = pyqtSignal(bool)
     file_selection_requested = pyqtSignal()
+    close_video_requested = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -122,6 +123,39 @@ class VideoPlayer(QWidget):
 
         # Add Placeholder Container to Grid (Centered)
         self.video_layout.addWidget(self.placeholder_widget, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+        # Close Button (Independent Layer, Top-Right)
+        self.close_btn_container = QWidget(self.video_container)
+        self.close_btn_container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        close_layout = QHBoxLayout(self.close_btn_container)
+        close_layout.setContentsMargins(0, 10, 10, 0) # Top-right margins
+        
+        self.btn_close_floating = QPushButton("✕")
+        self.btn_close_floating.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_close_floating.setFixedSize(32, 32)
+        self.btn_close_floating.setToolTip("Close Video")
+        self.btn_close_floating.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(20, 20, 20, 0.6);
+                color: #eee;
+                border: 1px solid #444;
+                border-radius: 16px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background-color: #d32f2f;
+                color: white;
+                border-color: #b71c1c;
+            }
+        """)
+        self.btn_close_floating.clicked.connect(self.close_video_requested.emit)
+        self.btn_close_floating.hide() # Hidden by default until video loads
+        
+        close_layout.addWidget(self.btn_close_floating)
+        
+        # Add to grid at top-right
+        self.video_layout.addWidget(self.close_btn_container, 0, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
         # OVERLAY CONTROLS
         self.overlay_widget = QWidget(self.video_container)
@@ -276,6 +310,13 @@ class VideoPlayer(QWidget):
     def set_status_message(self, message):
         self.placeholder_label.setText(message)
         self.placeholder_widget.setVisible(True)
+        self.placeholder_widget.raise_()
+        if hasattr(self, 'btn_close_floating'):
+            self.btn_close_floating.hide()
+            
+    def set_video_loaded(self):
+        if hasattr(self, 'btn_close_floating'):
+            self.btn_close_floating.show()
 
     def update_time_label(self, current_frame):
         self.time_label.setText(f"{current_frame} / {self.total_frames}")
