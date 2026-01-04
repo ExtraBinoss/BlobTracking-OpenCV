@@ -6,6 +6,7 @@ from .strategies import (
     TrackedShapeStrategy, FixedShapeStrategy,
     NoTextStrategy, IndexTextStrategy, RandomWordStrategy
 )
+from src.core.enums import TextPosition
 
 class VisualStateManager:
     def __init__(self, max_trace_length=20):
@@ -46,7 +47,7 @@ class Visualizer:
         # New Visual Settings
         self.show_traces = True
         self.border_thickness = 2
-        self.text_position = "Right" # Options: Right, Top, Center, Bottom
+        self.text_position = TextPosition.RIGHT.value # Options: Right, Top, Center, Bottom
         self.text_size = 14
         self.text_color = (255, 255, 255)
         
@@ -155,10 +156,10 @@ class Visualizer:
                 
                 # Position logic...
                 tx, ty = gx + gw + 5, gy + 10 # Default 'Right'
-                tp = self.text_position.lower()
-                if tp == "top": tx, ty = gx, gy - 10
-                elif tp == "bottom": tx, ty = gx, gy + gh + 20
-                elif tp == "center":
+                tp = self.text_position
+                if tp == TextPosition.TOP.value: tx, ty = gx, gy - 10
+                elif tp == TextPosition.BOTTOM.value: tx, ty = gx, gy + gh + 20
+                elif tp == TextPosition.CENTER.value:
                     text_dims, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
                     tx, ty = center[0] - text_dims[0] // 2, center[1] + text_dims[1] // 2
                 

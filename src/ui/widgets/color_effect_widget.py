@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
 from src.ui.widgets.custom_combo import ClickableComboBox
 from src.ui.widgets.color_picker_widget import CompactColorButton
+from src.core.enums import ColorMode, ColorEffectType
 
 class ColorEffectWidget(QWidget):
     """Modular widget for color/effect configuration."""
@@ -22,7 +23,7 @@ class ColorEffectWidget(QWidget):
         mode_row = QHBoxLayout()
         mode_row.addWidget(QLabel("Color Mode:"))
         self.mode_combo = ClickableComboBox()
-        self.mode_combo.addItems(["Solid", "Effect", "Custom"])
+        self.mode_combo.addItems([e.value for e in ColorMode])
         self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
         mode_row.addWidget(self.mode_combo, 1)
         layout.addLayout(mode_row)
@@ -47,7 +48,9 @@ class ColorEffectWidget(QWidget):
         effect_lay.setContentsMargins(0, 5, 0, 0)
         
         self.effect_combo = ClickableComboBox()
-        self.effect_combo.addItems(["Rainbow", "Cycle", "Breathe", "Ripple", "Firework"])
+        # Drop NONE for preset effects page if desired, or keep all except NONE
+        effects = [e.value for e in ColorEffectType if e != ColorEffectType.NONE]
+        self.effect_combo.addItems(effects)
         self.effect_combo.currentTextChanged.connect(self.emit_settings)
         effect_lay.addWidget(self.effect_combo)
         
@@ -75,7 +78,7 @@ class ColorEffectWidget(QWidget):
         base_row = QHBoxLayout()
         base_row.addWidget(QLabel("Base Effect:"))
         self.custom_effect_combo = ClickableComboBox()
-        self.custom_effect_combo.addItems(["None", "Rainbow", "Cycle", "Breathe", "Ripple", "Firework"])
+        self.custom_effect_combo.addItems([e.value for e in ColorEffectType])
         self.custom_effect_combo.currentTextChanged.connect(self.emit_settings)
         base_row.addWidget(self.custom_effect_combo, 1)
         custom_lay.addLayout(base_row)
@@ -114,9 +117,9 @@ class ColorEffectWidget(QWidget):
         self.stack.setCurrentIndex(0)
     
     def on_mode_changed(self, mode):
-        if mode == "Solid":
+        if mode == ColorMode.SOLID.value:
             self.stack.setCurrentIndex(0)
-        elif mode == "Effect":
+        elif mode == ColorMode.EFFECT.value:
             self.stack.setCurrentIndex(1)
         else:  # Custom
             self.stack.setCurrentIndex(2)
@@ -126,9 +129,9 @@ class ColorEffectWidget(QWidget):
         mode = self.mode_combo.currentText()
         settings = {"color_mode": mode}
         
-        if mode == "Solid":
+        if mode == ColorMode.SOLID.value:
             settings["solid_color"] = self.solid_color_btn.getRGB()
-        elif mode == "Effect":
+        elif mode == ColorMode.EFFECT.value:
             settings["effect_name"] = self.effect_combo.currentText()
             settings["effect_speed"] = self.speed_slider.value()
         else:  # Custom

@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
 from src.ui.widgets.custom_combo import ClickableComboBox
 from src.ui.widgets.color_picker_widget import CompactColorButton
+from src.core.enums import TextMode, TextPosition
 
 class TextStyleWidget(QWidget):
     """Modular widget for text style configuration."""
@@ -22,7 +23,7 @@ class TextStyleWidget(QWidget):
         mode_row = QHBoxLayout()
         mode_row.addWidget(QLabel("Text Mode:"))
         self.mode_combo = ClickableComboBox()
-        self.mode_combo.addItems(["None", "Index", "Random Word", "Custom"])
+        self.mode_combo.addItems([e.value for e in TextMode])
         self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
         mode_row.addWidget(self.mode_combo, 1)
         layout.addLayout(mode_row)
@@ -37,7 +38,7 @@ class TextStyleWidget(QWidget):
         pos_row = QHBoxLayout()
         pos_row.addWidget(QLabel("Position:"))
         self.pos_combo = ClickableComboBox()
-        self.pos_combo.addItems(["Right", "Top", "Bottom", "Center"])
+        self.pos_combo.addItems([e.value for e in TextPosition])
         self.pos_combo.currentTextChanged.connect(self.emit_settings)
         pos_row.addWidget(self.pos_combo, 1)
         sub_lay.addLayout(pos_row)
@@ -69,7 +70,7 @@ class TextStyleWidget(QWidget):
         self.sub_props.setVisible(False)  # Hidden when "None"
     
     def on_mode_changed(self, mode):
-        self.sub_props.setVisible(mode != "None")
+        self.sub_props.setVisible(mode != TextMode.NONE.value)
         self.emit_settings()
     
     def get_settings(self):

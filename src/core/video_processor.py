@@ -11,7 +11,7 @@ from src.visuals.strategies import (
     TrackedShapeStrategy, FixedShapeStrategy,
     NoTextStrategy, IndexTextStrategy, RandomWordStrategy
 )
-from src.core.enums import DetectionMode
+from src.core.enums import DetectionMode, ColorMode, ColorEffectType, TextMode, TextPosition
 
 class VideoProcessor(QThread):
     progress_update = pyqtSignal(int)
@@ -52,17 +52,17 @@ class VideoProcessor(QThread):
     
     def _apply_visual_settings(self, visualizer, settings):
         # Color Mode Setup
-        cm = settings.get("color_mode", "Solid")
+        cm = settings.get("color_mode", ColorMode.SOLID.value)
         
-        if cm == "Solid":
+        if cm == ColorMode.SOLID.value:
             solid_color = settings.get("solid_color", (255, 255, 255))
             visualizer.set_color_strategy(SolidColorStrategy(solid_color))
-        elif cm == "Effect":
-            effect_name = settings.get("effect_name", "Rainbow")
+        elif cm == ColorMode.EFFECT.value:
+            effect_name = settings.get("effect_name", ColorEffectType.RAINBOW.value)
             speed = settings.get("effect_speed", 50)
             self._set_effect_strategy(visualizer, effect_name, speed, 75)
-        elif cm == "Custom":
-            effect_name = settings.get("effect_name", "None")
+        elif cm == ColorMode.CUSTOM.value:
+            effect_name = settings.get("effect_name", ColorEffectType.NONE.value)
             speed = settings.get("effect_speed", 50)
             intensity = settings.get("effect_intensity", 75)
             primary_color = settings.get("primary_color", (67, 160, 71))
@@ -72,10 +72,10 @@ class VideoProcessor(QThread):
             visualizer.set_color_strategy(WhiteColorStrategy())
             
         # Text Settings
-        tm = settings.get("text_mode", "None")
-        if tm == "None":
+        tm = settings.get("text_mode", TextMode.NONE.value)
+        if tm == TextMode.NONE.value:
             visualizer.set_text_strategy(NoTextStrategy())
-        elif tm == "Random Word":
+        elif tm == TextMode.RANDOM_WORD.value:
             visualizer.set_text_strategy(RandomWordStrategy())
         else:  # Index or Custom
             visualizer.set_text_strategy(IndexTextStrategy())
@@ -83,7 +83,7 @@ class VideoProcessor(QThread):
         # Text styling 
         visualizer.text_size = settings.get("text_size", 14)
         visualizer.text_color = settings.get("text_color", (255, 255, 255))
-        visualizer.text_position = settings.get("text_position", "Right")
+        visualizer.text_position = settings.get("text_position", TextPosition.RIGHT.value)
             
         # Shape
         fixed = settings.get("fixed_size_enabled", False)
@@ -114,16 +114,16 @@ class VideoProcessor(QThread):
         visualizer.max_blobs = settings.get("max_blobs", 50)
     
     def _set_effect_strategy(self, visualizer, effect_name, speed, intensity, primary_color=None):
-        if effect_name == "Rainbow":
+        if effect_name == ColorEffectType.RAINBOW.value:
             visualizer.set_color_strategy(RainbowColorStrategy())
-        elif effect_name == "Cycle":
+        elif effect_name == ColorEffectType.CYCLE.value:
             visualizer.set_color_strategy(CycleColorStrategy(speed=speed))
-        elif effect_name == "Breathe":
+        elif effect_name == ColorEffectType.BREATHE.value:
             base = primary_color if primary_color else (67, 160, 71)
             visualizer.set_color_strategy(BreatheColorStrategy(base_color=base, speed=speed, intensity=intensity))
-        elif effect_name == "Ripple":
+        elif effect_name == ColorEffectType.RIPPLE.value:
             visualizer.set_color_strategy(RippleColorStrategy(speed=speed, intensity=intensity))
-        elif effect_name == "Firework":
+        elif effect_name == ColorEffectType.FIREWORK.value:
             visualizer.set_color_strategy(FireworkColorStrategy(speed=speed, intensity=intensity))
         else:
             visualizer.set_color_strategy(WhiteColorStrategy())

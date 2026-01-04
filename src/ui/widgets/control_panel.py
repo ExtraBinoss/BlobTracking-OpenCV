@@ -9,6 +9,7 @@ from src.ui.widgets.custom_combo import ClickableComboBox
 from src.ui.widgets.color_effect_widget import ColorEffectWidget
 from src.ui.widgets.text_style_widget import TextStyleWidget
 from src.ui.widgets.color_picker_widget import CompactColorButton
+from src.core.enums import Platform
 
 class ControlPanel(QWidget):
     params_changed = pyqtSignal(dict)
@@ -420,14 +421,14 @@ class ControlPanel(QWidget):
         target_path = tracked_path if os.path.exists(tracked_path) else path
         folder = os.path.dirname(target_path)
              
-        if os.name == 'nt':
+        if os.name == Platform.WINDOWS.value:
             try:
                 # On Windows, we can use explorer /select to highlight the file
                 subprocess.run(['explorer', '/select,', os.path.normpath(target_path)])
             except Exception as e:
                 print(f"Error opening folder: {e}")
                 os.startfile(folder)
-        elif os.name == 'posix':
+        elif os.name == Platform.LINUX.value:
             subprocess.Popen(['xdg-open', folder])
         else:
             # Mac
