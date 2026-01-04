@@ -98,6 +98,14 @@ class VideoProcessor(QThread):
         # Overlays
         visualizer.show_traces = settings.get("show_traces", True)
         visualizer.border_thickness = settings.get("border_thickness", 2)
+        
+        # Tracer Settings
+        visualizer.trace_thickness = settings.get("trace_thickness", 3)
+        visualizer.trace_lifetime = settings.get("trace_lifetime", 20)
+        visualizer.trace_color = settings.get("trace_color", None)
+        
+        # Limits
+        visualizer.max_blobs = settings.get("max_blobs", 50)
     
     def _set_effect_strategy(self, visualizer, effect_name, speed, intensity, primary_color=None):
         if effect_name == "Rainbow":

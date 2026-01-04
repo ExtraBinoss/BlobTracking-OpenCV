@@ -47,6 +47,14 @@ class Visualizer:
         self.text_position = "Right" # Options: Right, Top, Center, Bottom
         self.text_size = 14
         self.text_color = (255, 255, 255)
+        
+        # Tracer Settings
+        self.trace_thickness = 2
+        self.trace_lifetime = 20  # Number of frames
+        self.trace_color = None  # None = use shape color
+        
+        # Limits
+        self.max_blobs = 50
 
     def set_color_strategy(self, strategy):
         self.color_strategy = strategy
@@ -64,7 +72,12 @@ class Visualizer:
         
         overlay = frame.copy()
         
+        # Limit to max_blobs
+        drawn_count = 0
         for obj_id, data in objects.items():
+            if drawn_count >= self.max_blobs:
+                break
+            drawn_count += 1
             x, y, radius = data # Centroid and radius from tracker
             
             # 1. Geometry
@@ -84,10 +97,13 @@ class Visualizer:
             if self.show_traces:
                 trace = self.state.traces.get(obj_id, [])
                 if len(trace) > 1:
-                    limit = min(len(trace), 20)
+                    limit = min(len(trace), self.trace_lifetime)
+                    trace_col = self.trace_color if self.trace_color else color
                     for i in range(1, limit):
-                        thickness = int(np.sqrt(64 / float(i + 1)) * 2)
-                        cv2.line(frame, trace[i - 1], trace[i], color, thickness)
+                        # Fade thickness based on age
+                        age_factor = 1 - (i / limit)
+                        thickness = max(1, int(self.trace_thickness * age_factor * 1.5))
+                        cv2.line(frame, trace[i - 1], trace[i], trace_col, thickness)
 
             # Draw Shape
             # We use gw/gh to determine radius if circle

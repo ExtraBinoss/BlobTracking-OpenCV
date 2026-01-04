@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QComboBox,
                              QTabWidget, QCheckBox, QColorDialog, QSpinBox, QFormLayout,
                              QScrollArea)
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QColor
 from src.core.enums import DetectionMode, VisualStyle
 from src.ui.widgets.custom_combo import ClickableComboBox
 from src.ui.widgets.color_effect_widget import ColorEffectWidget
@@ -153,12 +154,30 @@ class ControlPanel(QWidget):
         # Geometry & Overlays
         geom_group = QGroupBox("Geometry & Overlays")
         g_lay = QVBoxLayout(geom_group)
+        g_lay.setSpacing(10)
         
+        # Trace Settings
         self.trace_chk = QCheckBox("Show Traces")
         self.trace_chk.setChecked(True)
         self.trace_chk.toggled.connect(self.emit_visuals)
         g_lay.addWidget(self.trace_chk)
         
+        self.trace_thickness_slider = self.create_slider("Trace Thickness", 1, 10, 3, g_lay)
+        self.trace_thickness_slider.valueChanged.connect(self.emit_visuals)
+        
+        self.trace_lifetime_slider = self.create_slider("Trace Lifetime", 5, 60, 20, g_lay)
+        self.trace_lifetime_slider.valueChanged.connect(self.emit_visuals)
+        
+        # Trace Color (optional - uses shape color if not set)
+        trace_color_row = QHBoxLayout()
+        trace_color_row.addWidget(QLabel("Trace Color:"))
+        from src.ui.widgets.color_picker_widget import CompactColorButton
+        self.trace_color_btn = CompactColorButton(QColor(0, 255, 0))
+        self.trace_color_btn.colorChanged.connect(self.emit_visuals)
+        trace_color_row.addWidget(self.trace_color_btn, 1)
+        g_lay.addLayout(trace_color_row)
+        
+        # Centroid Dot
         self.dot_chk = QCheckBox("Show Centroid Dot")
         self.dot_chk.setChecked(True)
         self.dot_chk.toggled.connect(self.emit_visuals)
@@ -166,6 +185,16 @@ class ControlPanel(QWidget):
         
         self.border_slider = self.create_slider("Border Thickness", 1, 10, 2, g_lay)
         self.border_slider.valueChanged.connect(self.emit_visuals)
+        
+        # Max Blobs
+        max_blobs_row = QHBoxLayout()
+        max_blobs_row.addWidget(QLabel("Max Blobs:"))
+        self.max_blobs_spin = QSpinBox()
+        self.max_blobs_spin.setRange(1, 100)
+        self.max_blobs_spin.setValue(50)
+        self.max_blobs_spin.valueChanged.connect(self.emit_visuals)
+        max_blobs_row.addWidget(self.max_blobs_spin, 1)
+        g_lay.addLayout(max_blobs_row)
         
         # Fixed Size
         fs_row = QHBoxLayout()
@@ -275,6 +304,10 @@ class ControlPanel(QWidget):
             "show_dot": self.dot_chk.isChecked(),
             "show_traces": self.trace_chk.isChecked(),
             "border_thickness": self.border_slider.value(),
+            "trace_thickness": self.trace_thickness_slider.value(),
+            "trace_lifetime": self.trace_lifetime_slider.value(),
+            "trace_color": self.trace_color_btn.getRGB(),
+            "max_blobs": self.max_blobs_spin.value(),
         }
         
         # Merge color settings
