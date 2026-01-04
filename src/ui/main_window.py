@@ -33,13 +33,13 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
 
-        # Control Panel
-        self.control_panel = ControlPanel()
-        main_layout.addWidget(self.control_panel, stretch=1)
-
         # Video Player
         self.video_player = VideoPlayer()
         main_layout.addWidget(self.video_player, stretch=3)
+
+        # Control Panel
+        self.control_panel = ControlPanel()
+        main_layout.addWidget(self.control_panel, stretch=1)
 
         # Toolbar
         self.init_toolbar()

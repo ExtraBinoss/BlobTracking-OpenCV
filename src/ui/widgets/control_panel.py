@@ -1,9 +1,8 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QComboBox, 
                              QSlider, QLabel, QPushButton, QFileDialog, QHBoxLayout,
-                             QScrollArea, QCheckBox, QColorDialog, QSpinBox)
-from PyQt6.QtCore import Qt, pyqtSignal, QEvent
+                             QTabWidget, QCheckBox, QColorDialog, QSpinBox, QFormLayout)
+from PyQt6.QtCore import Qt, pyqtSignal
 from src.core.enums import DetectionMode, VisualStyle
-from src.ui.widgets.collapsible_box import CollapsibleBox
 from src.ui.widgets.custom_combo import ClickableComboBox
 
 class ControlPanel(QWidget):
@@ -11,8 +10,8 @@ class ControlPanel(QWidget):
     file_selected = pyqtSignal(str)
     export_requested = pyqtSignal()
     debug_toggled = pyqtSignal(bool) 
-    shape_changed = pyqtSignal(str) # Legacy? Maybe keep for now
-    visuals_changed = pyqtSignal(dict) # New signal for modular visuals
+    shape_changed = pyqtSignal(str)
+    visuals_changed = pyqtSignal(dict)
     
     def __init__(self):
         super().__init__()
@@ -20,171 +19,196 @@ class ControlPanel(QWidget):
 
     def init_ui(self):
         main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
         
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        content = QWidget()
-        layout = QVBoxLayout(content)
-        layout.setContentsMargins(10, 10, 10, 10) 
-
-        # File Selection (Always visible)
-        self.file_label = QLabel("No file selected")
-        self.file_label.setWordWrap(True)
-        self.file_label.setStyleSheet("border: 1px solid #555; padding: 5px; border-radius: 6px;") 
-        btn_file = QPushButton("Select Video")
-        btn_file.clicked.connect(self.select_file)
-        layout.addWidget(btn_file)
-        layout.addWidget(self.file_label)
-        layout.addWidget(QLabel("<hr>"))
-
-        # Visual Config Box
-        self.vis_box = CollapsibleBox("Visual Settings")
-        vis_lay = QVBoxLayout()
+        self.tabs = QTabWidget()
+        main_layout.addWidget(self.tabs)
         
-        # Color Mode
-        vis_lay.addWidget(QLabel("Color Mode:"))
+        # --- TAB 1: DETECTION ---
+        self.tab_detect = QWidget()
+        self.init_detection_tab()
+        self.tabs.addTab(self.tab_detect, "Detection")
+        
+        # --- TAB 2: VISUALS ---
+        self.tab_visuals = QWidget()
+        self.init_visuals_tab()
+        self.tabs.addTab(self.tab_visuals, "Visuals")
+        
+        # --- TAB 3: PROJECT ---
+        self.tab_project = QWidget()
+        self.init_project_tab()
+        self.tabs.addTab(self.tab_project, "Project")
+
+        # Initial State
+        self.on_mode_changed(self.mode_combo.currentText())
+
+    def init_detection_tab(self):
+        layout = QVBoxLayout(self.tab_detect)
+        layout.setSpacing(15)
+        
+        # 1. Mode Selection
+        mode_group = QGroupBox("Detection Mode")
+        mode_lay = QVBoxLayout(mode_group)
+        self.mode_combo = ClickableComboBox()
+        self.mode_combo.addItems([e.value for e in DetectionMode])
+        self.mode_combo.setCurrentText(DetectionMode.EDGES.value)
+        self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
+        mode_lay.addWidget(self.mode_combo)
+        layout.addWidget(mode_group)
+        
+        # 2. Dynamic Settings Area
+        self.dynamic_settings_group = QGroupBox("Mode Settings")
+        dyn_lay = QVBoxLayout(self.dynamic_settings_group)
+        
+        # Grayscale Specs
+        self.gray_widget = QWidget()
+        g_lay = QVBoxLayout(self.gray_widget)
+        g_lay.setContentsMargins(0,0,0,0)
+        self.thresh_slider = self.create_slider("Threshold", 0, 255, 127, g_lay)
+        dyn_lay.addWidget(self.gray_widget)
+        
+        # Edge Specs
+        self.edge_widget = QWidget()
+        e_lay = QVBoxLayout(self.edge_widget)
+        e_lay.setContentsMargins(0,0,0,0)
+        self.canny_low_slider = self.create_slider("Low Threshold", 0, 255, 50, e_lay)
+        self.canny_high_slider = self.create_slider("High Threshold", 0, 255, 150, e_lay)
+        dyn_lay.addWidget(self.edge_widget)
+        
+        # Color Specs
+        self.color_widget = QWidget()
+        c_lay = QVBoxLayout(self.color_widget)
+        c_lay.setContentsMargins(0,0,0,0)
+        self.pick_color_btn = QPushButton("Pick Target Color")
+        self.pick_color_btn.clicked.connect(self.open_color_picker)
+        c_lay.addWidget(self.pick_color_btn)
+        
+        # Compact HSV Sliders
+        self.h_min_slider = self.create_slider("H Min", 0, 179, 0, c_lay)
+        self.h_max_slider = self.create_slider("H Max", 0, 179, 179, c_lay)
+        self.s_min_slider = self.create_slider("S Min", 0, 255, 0, c_lay)
+        self.s_max_slider = self.create_slider("S Max", 0, 255, 255, c_lay)
+        self.v_min_slider = self.create_slider("V Min", 0, 255, 0, c_lay)
+        self.v_max_slider = self.create_slider("V Max", 0, 255, 255, c_lay)
+        dyn_lay.addWidget(self.color_widget)
+        
+        layout.addWidget(self.dynamic_settings_group)
+        
+        # 3. General Filters
+        filter_group = QGroupBox("Pre-processing & Filters")
+        f_lay = QVBoxLayout(filter_group)
+        self.blur_slider = self.create_slider("Blur", 0, 20, 0, f_lay)
+        self.dilate_slider = self.create_slider("Dilation", 0, 20, 0, f_lay)
+        self.min_area_slider = self.create_slider("Min Area", 10, 10000, 100, f_lay)
+        self.max_area_slider = self.create_slider("Max Area", 100, 100000, 50000, f_lay)
+        layout.addWidget(filter_group)
+        
+        layout.addStretch()
+
+    def init_visuals_tab(self):
+        layout = QVBoxLayout(self.tab_visuals)
+        layout.setSpacing(15)
+        
+        # Style
+        style_group = QGroupBox("Style")
+        s_lay = QFormLayout(style_group)
+        
+        self.shape_combo = ClickableComboBox()
+        self.shape_combo.addItems([e.value for e in VisualStyle])
+        self.shape_combo.currentTextChanged.connect(self.emit_visuals)
+        s_lay.addRow("Shape:", self.shape_combo)
+        
         self.color_combo = ClickableComboBox()
         self.color_combo.addItems(["White", "Rainbow", "Cycle"])
         self.color_combo.currentTextChanged.connect(self.emit_visuals)
-        vis_lay.addWidget(self.color_combo)
-
-        # Text Mode
-        vis_lay.addWidget(QLabel("Text Mode:"))
+        s_lay.addRow("Color:", self.color_combo)
+        
         self.text_combo = ClickableComboBox()
         self.text_combo.addItems(["None", "Index", "Random Word"])
         self.text_combo.currentTextChanged.connect(self.emit_visuals)
-        vis_lay.addWidget(self.text_combo)
-
-        # Shape Logic
-        vis_lay.addWidget(QLabel("Shape Style:"))
-        self.shape_combo = ClickableComboBox()
-        self.shape_combo.addItems([e.value for e in VisualStyle])
-        self.shape_combo.currentTextChanged.connect(self.emit_visuals) # Use new signal logic
-        vis_lay.addWidget(self.shape_combo)
+        s_lay.addRow("Text:", self.text_combo)
         
-        # Fixed Size Toggle & Spinner
-        size_row = QHBoxLayout()
+        self.text_pos_combo = ClickableComboBox()
+        self.text_pos_combo.addItems(["Right", "Top", "Bottom", "Center"])
+        self.text_pos_combo.currentTextChanged.connect(self.emit_visuals)
+        s_lay.addRow("Text Pos:", self.text_pos_combo)
+        
+        layout.addWidget(style_group)
+        
+        # Geometry & Overlays
+        geom_group = QGroupBox("Geometry & Overlays")
+        g_lay = QVBoxLayout(geom_group)
+        
+        self.trace_chk = QCheckBox("Show Traces")
+        self.trace_chk.setChecked(True)
+        self.trace_chk.toggled.connect(self.emit_visuals)
+        g_lay.addWidget(self.trace_chk)
+        
+        self.dot_chk = QCheckBox("Show Centroid Dot")
+        self.dot_chk.setChecked(True)
+        self.dot_chk.toggled.connect(self.emit_visuals)
+        g_lay.addWidget(self.dot_chk)
+        
+        self.border_slider = self.create_slider("Border Thickness", 1, 10, 2, g_lay)
+        self.border_slider.valueChanged.connect(self.emit_visuals)
+        
+        # Fixed Size
+        fs_row = QHBoxLayout()
         self.fixed_size_chk = QCheckBox("Fixed Size")
         self.fixed_size_chk.toggled.connect(self.emit_visuals)
-        size_row.addWidget(self.fixed_size_chk)
+        fs_row.addWidget(self.fixed_size_chk)
         
         self.size_spin = QSpinBox()
         self.size_spin.setRange(10, 500)
         self.size_spin.setValue(50)
         self.size_spin.setSuffix(" px")
         self.size_spin.valueChanged.connect(self.emit_visuals)
-        size_row.addWidget(self.size_spin)
-        vis_lay.addLayout(size_row)
-
-        # Toggles
-        # Toggles & Extra Settings
-        self.dot_chk = QCheckBox("Show Centroid Dot")
-        self.dot_chk.setChecked(True)
-        self.dot_chk.toggled.connect(self.emit_visuals)
-        vis_lay.addWidget(self.dot_chk)
-
-        self.trace_chk = QCheckBox("Show Traces")
-        self.trace_chk.setChecked(True)
-        self.trace_chk.toggled.connect(self.emit_visuals)
-        vis_lay.addWidget(self.trace_chk)
+        fs_row.addWidget(self.size_spin)
+        g_lay.addLayout(fs_row)
         
-        # Border Thickness
-        self.border_slider = self.create_slider("Border Thickness", 1, 10, 2, vis_lay)
-        self.border_slider.valueChanged.connect(self.emit_visuals)
+        layout.addWidget(geom_group)
+        layout.addStretch()
+
+    def init_project_tab(self):
+        layout = QVBoxLayout(self.tab_project)
+        layout.setSpacing(20)
         
-        # Text Position
-        vis_lay.addWidget(QLabel("Text Position:"))
-        self.text_pos_combo = ClickableComboBox()
-        self.text_pos_combo.addItems(["Right", "Top", "Bottom", "Center"])
-        self.text_pos_combo.currentTextChanged.connect(self.emit_visuals)
-        vis_lay.addWidget(self.text_pos_combo)
-
-        self.vis_box.content_layout.addLayout(vis_lay)
-        layout.addWidget(self.vis_box)
+        # File Info
+        info_group = QGroupBox("Input Source")
+        i_lay = QVBoxLayout(info_group)
         
-        # Detection Mode Box
-        self.detect_box = CollapsibleBox("Detection Settings")
+        self.file_label = QLabel("No file selected")
+        self.file_label.setWordWrap(True)
+        self.file_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.file_label.setStyleSheet("border: 2px dashed #555; padding: 20px; border-radius: 8px;")
+        i_lay.addWidget(self.file_label)
         
-        # Mode Selection
-        mode_lay = QVBoxLayout()
-        mode_lay.addWidget(QLabel("Mode:"))
-        self.mode_combo = ClickableComboBox()
-        self.mode_combo.addItems([e.value for e in DetectionMode])
-        self.mode_combo.setCurrentText(DetectionMode.EDGES.value)
-        self.mode_combo.currentTextChanged.connect(self.on_mode_changed)
-        mode_lay.addWidget(self.mode_combo)
-        mode_lay.addWidget(QLabel("<hr>"))
-        self.detect_box.content_layout.addLayout(mode_lay)
-
-        # Mode Specific Settings (Added to Detect Box)
-        # 1. Grayscale
-        self.gray_widget = QWidget()
-        gray_lay = QVBoxLayout(self.gray_widget)
-        gray_lay.setContentsMargins(0,0,0,0)
-        self.thresh_slider = self.create_slider("Threshold", 0, 255, 127, gray_lay)
-        self.detect_box.add_widget(self.gray_widget)
-
-        # 2. Edges
-        self.edge_widget = QWidget()
-        edge_lay = QVBoxLayout(self.edge_widget)
-        edge_lay.setContentsMargins(0,0,0,0)
-        self.canny_low_slider = self.create_slider("Low Threshold", 0, 255, 50, edge_lay)
-        self.canny_high_slider = self.create_slider("High Threshold", 0, 255, 150, edge_lay)
-        self.detect_box.add_widget(self.edge_widget)
-
-        # 3. Color
-        self.color_widget = QWidget()
-        color_lay = QVBoxLayout(self.color_widget)
-        color_lay.setContentsMargins(0,0,0,0)
-        self.pick_color_btn = QPushButton("Pick Color & Auto-Set Range")
-        self.pick_color_btn.clicked.connect(self.open_color_picker)
-        color_lay.addWidget(self.pick_color_btn)
+        btn_file = QPushButton("Select Video File")
+        btn_file.setStyleSheet("padding: 8px;")
+        btn_file.clicked.connect(self.select_file)
+        i_lay.addWidget(btn_file)
         
-        self.h_min_slider = self.create_slider("Hue Min", 0, 179, 0, color_lay)
-        self.h_max_slider = self.create_slider("Hue Max", 0, 179, 179, color_lay)
-        self.s_min_slider = self.create_slider("Sat Min", 0, 255, 0, color_lay)
-        self.s_max_slider = self.create_slider("Sat Max", 0, 255, 255, color_lay)
-        self.v_min_slider = self.create_slider("Val Min", 0, 255, 0, color_lay)
-        self.v_max_slider = self.create_slider("Val Max", 0, 255, 255, color_lay)
-        self.detect_box.add_widget(self.color_widget)
+        layout.addWidget(info_group)
         
-        layout.addWidget(self.detect_box)
-
-        # General Filters Box
-        self.filter_box = CollapsibleBox("General Filters")
-        self.blur_slider = self.create_slider("Blur", 0, 20, 0, self.filter_box.content_layout)
-        self.dilate_slider = self.create_slider("Dilation", 0, 20, 0, self.filter_box.content_layout)
-        self.min_area_slider = self.create_slider("Min Area", 10, 10000, 100, self.filter_box.content_layout)
-        self.max_area_slider = self.create_slider("Max Area", 100, 100000, 50000, self.filter_box.content_layout)
-        layout.addWidget(self.filter_box)
-
-        # Export Button
-        layout.addStretch() 
-        self.export_btn = QPushButton("Export Video")
+        # Actions
+        action_group = QGroupBox("Actions")
+        a_lay = QVBoxLayout(action_group)
+        
+        self.export_btn = QPushButton("Export Processed Video")
         self.export_btn.clicked.connect(self.export_requested)
-        self.export_btn.setStyleSheet("background-color: #2e7d32; color: white; padding: 10px;") # Updated to Green
+        self.export_btn.setStyleSheet("background-color: #2e7d32; color: white; padding: 12px; font-weight: bold;")
         self.export_btn.setEnabled(False)
-        layout.addWidget(self.export_btn)
+        a_lay.addWidget(self.export_btn)
         
-        # Finish Setup
-        scroll.setWidget(content)
-        main_layout.addWidget(scroll)
-        
-        # Expand meaningful sections by default
-        self.detect_box.expand()
-        self.vis_box.collapse()
-        self.filter_box.collapse()
-
-        # Initialize visibility based on default
-        self.on_mode_changed(self.mode_combo.currentText())
+        layout.addWidget(action_group)
+        layout.addStretch()
 
     def create_slider(self, label_text, min_val, max_val, default, parent_layout):
         container = QWidget()
-        lay = QVBoxLayout(container) # Vertical layout for safer resizing
+        lay = QVBoxLayout(container)
         lay.setContentsMargins(0, 5, 0, 5)
         lay.setSpacing(2)
         
-        # Top Row: Label ... Value
         top_row = QWidget()
         top_lay = QHBoxLayout(top_row)
         top_lay.setContentsMargins(0, 0, 0, 0)
@@ -198,7 +222,6 @@ class ControlPanel(QWidget):
         
         lay.addWidget(top_row)
         
-        # Slider Row
         slider = QSlider(Qt.Orientation.Horizontal)
         slider.setRange(min_val, max_val)
         slider.setValue(default)
@@ -206,12 +229,7 @@ class ControlPanel(QWidget):
         slider.valueChanged.connect(lambda v, vl=val_lbl: vl.setText(str(v)))
         lay.addWidget(slider)
         
-        if isinstance(parent_layout, QVBoxLayout) or isinstance(parent_layout, QHBoxLayout):
-            parent_layout.addWidget(container)
-        else:
-            # Fallback if parent_layout is some other layout manager or we need to add differently
-            parent_layout.addWidget(container)
-            
+        parent_layout.addWidget(container)
         return slider
 
     def get_params(self):
@@ -247,7 +265,6 @@ class ControlPanel(QWidget):
 
     def emit_visuals(self, *args):
         self.visuals_changed.emit(self.get_visual_settings())
-        # Also emit basic shape for legacy listeners if needed
         self.shape_changed.emit(self.shape_combo.currentText())
 
     def emit_params(self, *args):
@@ -261,7 +278,6 @@ class ControlPanel(QWidget):
             self.file_selected.emit(fname)
 
     def on_mode_changed(self, mode):
-        # mode is string from combo
         self.gray_widget.setVisible(mode == DetectionMode.GRAYSCALE.value)
         self.edge_widget.setVisible(mode == DetectionMode.EDGES.value)
         self.color_widget.setVisible(mode == DetectionMode.COLOR.value)
