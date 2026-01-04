@@ -93,7 +93,7 @@ class Visualizer:
             # For now let's assume if it's "circle" we draw circle, else square.
             # But "shape_type" comes from the enum...
             
-            is_circle = (shape_type == "circle")
+            is_circle = (shape_type.lower() == "circle")
             
             if is_circle:
                 cv2.circle(frame, center, draw_radius, color, 2)

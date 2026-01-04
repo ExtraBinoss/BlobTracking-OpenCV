@@ -1,10 +1,10 @@
 from enum import Enum
 
 class DetectionMode(str, Enum):
-    GRAYSCALE = "grayscale"
-    EDGES = "edges"
-    COLOR = "color"
+    GRAYSCALE = "Grayscale"
+    EDGES = "Edges"
+    COLOR = "Color"
 
 class VisualStyle(str, Enum):
-    SQUARE = "square"
-    CIRCLE = "circle"
+    SQUARE = "Square"
+    CIRCLE = "Circle"

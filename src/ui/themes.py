@@ -1,12 +1,11 @@
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QPalette, QColor
 
 class ThemeManager:
     @staticmethod
     def apply_theme(mode="dark"):
         app = QApplication.instance()
         if mode == "dark":
-            app.setStyle("Fusion") # Fusion is a good base for cross-platform QSS
+            app.setStyle("Fusion")
             app.setStyleSheet(ThemeManager.get_dark_qss())
         else:
             app.setStyle("Fusion")

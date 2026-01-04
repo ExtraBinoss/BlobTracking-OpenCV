@@ -1,8 +1,8 @@
-import os # Added import
+import os
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QToolBar, 
-                             QSizePolicy, QLabel) # Added QLabel
+                             QSizePolicy, QLabel)
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QIcon # Added import
+from PyQt6.QtGui import QAction, QIcon
 from src.core.video_processor import VideoProcessor
 from src.ui.widgets.control_panel import ControlPanel
 from src.ui.widgets.video_player import VideoPlayer

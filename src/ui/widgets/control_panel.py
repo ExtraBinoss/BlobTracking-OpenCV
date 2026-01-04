@@ -225,12 +225,12 @@ class ControlPanel(QWidget):
             "show_dot": self.dot_chk.isChecked()
         }
 
-    def emit_visuals(self):
+    def emit_visuals(self, *args):
         self.visuals_changed.emit(self.get_visual_settings())
         # Also emit basic shape for legacy listeners if needed
         self.shape_changed.emit(self.shape_combo.currentText())
 
-    def emit_params(self):
+    def emit_params(self, *args):
         self.params_changed.emit(self.get_params())
 
     def select_file(self):
