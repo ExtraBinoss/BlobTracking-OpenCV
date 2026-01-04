@@ -53,7 +53,7 @@ class HueBar(QWidget):
 
 
 class SaturationValueBox(QWidget):
-    """Saturation/Value selection box."""
+    """Saturation/Value selection box with cached gradient."""
     svChanged = pyqtSignal(int, int)
     
     def __init__(self, parent=None):
@@ -62,22 +62,34 @@ class SaturationValueBox(QWidget):
         self._hue = 0
         self._sat = 255
         self._val = 255
+        self._gradient_cache = None
+        self._cached_hue = -1
+    
+    def _rebuildGradient(self):
+        """Build cached gradient image for current hue."""
+        from PyQt6.QtGui import QImage
+        w, h = self.width(), self.height()
+        img = QImage(w, h, QImage.Format.Format_RGB32)
+        
+        for x in range(w):
+            for y in range(h):
+                sat = int(255 * x / w)
+                val = int(255 * (h - y) / h)
+                color = QColor.fromHsv(self._hue, sat, val)
+                img.setPixelColor(x, y, color)
+        
+        self._gradient_cache = img
+        self._cached_hue = self._hue
     
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        # Draw color gradient
-        base_color = QColor.fromHsv(self._hue, 255, 255)
+        # Rebuild cache only when hue changes
+        if self._gradient_cache is None or self._cached_hue != self._hue:
+            self._rebuildGradient()
         
-        # White to color gradient (horizontal)
-        for x in range(self.width()):
-            for y in range(self.height()):
-                sat = int(255 * x / self.width())
-                val = int(255 * (self.height() - y) / self.height())
-                color = QColor.fromHsv(self._hue, sat, val)
-                painter.setPen(QPen(color))
-                painter.drawPoint(x, y)
+        # Draw cached gradient
+        painter.drawImage(0, 0, self._gradient_cache)
         
         # Draw selector
         sel_x = int(self._sat * self.width() / 255)
@@ -104,7 +116,7 @@ class SaturationValueBox(QWidget):
     
     def setHue(self, hue):
         self._hue = hue
-        self.update()
+        self.update()  # Cache will rebuild on next paint
     
     def setSV(self, sat, val):
         self._sat = sat

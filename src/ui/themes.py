@@ -174,7 +174,6 @@ class ThemeManager:
         }
         QSlider::handle:horizontal:hover {
             background: #e8f5e9;
-            transform: scale(1.1); /* Transformation not supported in QSS directly usually, but logic exists elsewhere maybe */
         }
 
         /* LABELS & OTHERS */

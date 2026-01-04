@@ -1,6 +1,6 @@
 import os
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QToolBar, 
-                             QSizePolicy, QLabel)
+                             QSizePolicy, QLabel, QSplitter)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QIcon
 from src.core.video_processor import VideoProcessor
@@ -26,20 +26,28 @@ class MainWindow(QMainWindow):
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 
-        # Main Layout
+        # Main Layout with Splitter for resizable panels
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QHBoxLayout(central_widget)
         main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
+        main_layout.setSpacing(0)
+        
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        main_layout.addWidget(splitter)
 
         # Video Player
         self.video_player = VideoPlayer()
-        main_layout.addWidget(self.video_player, stretch=3)
+        splitter.addWidget(self.video_player)
 
         # Control Panel
         self.control_panel = ControlPanel()
-        main_layout.addWidget(self.control_panel, stretch=1)
+        splitter.addWidget(self.control_panel)
+        
+        # Set initial sizes (3:1 ratio)
+        splitter.setSizes([750, 250])
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 1)
 
         # Toolbar
         self.init_toolbar()
