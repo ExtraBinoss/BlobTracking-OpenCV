@@ -1,99 +1,85 @@
-# BlobTrack 🔵
+# BlobTrack
 
-A real-time blob detection and tracking application built with Python, OpenCV, and PyQt6.
+**BlobTrack** is a computer vision tool designed to create generative visuals from video content. By leveraging the power of OpenCV, it extracts organic shapes and movements from source videos, allowing for real-time manipulation and high-quality export for VJ loops, motion graphics, and creative coding projects.
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
-![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green.svg)
-![PyQt6](https://img.shields.io/badge/PyQt6-6.x-orange.svg)
+---
 
-## Features
+> **Author's Note**  
+> "TouchDesigner blob tracking capabilities is cool, I wanted to recreate that effect using the same library as them, OpenCV. This effect is very good for VJ loops or any other content that could need it. Let your artist's imagination run wild!"
 
-- **Multiple Detection Modes**
-  - Grayscale threshold detection
-  - Canny edge detection
-  - HSV color filtering
+---
 
-- **Customizable Visuals**
-  - Shape styles (Circle, Square)
-  - Color effects (Solid, Rainbow, Cycle, Breathe, Ripple, Firework)
-  - Text overlays (Index, Random Words, Custom)
-  - Trace trails with customizable thickness, lifetime, and color
+## 🚀 Features
 
-- **Real-time Preview**
-  - Live video processing
-  - Adjustable parameters on-the-fly
-  - Debug mode for threshold visualization
+- **Advanced Detection**: Multiple detection modes including Edge Detection (Canny), Grayscale Thresholding, and Color Range Isolation.
+- **Dynamic Visuals**: Customize shapes, colors, and effects (Rainbow, cycle, breathe, etc.).
+- **Real-Time Preview**: Tweak parameters instantly while watching the result.
+- **High-Quality Export**: Process and save your creations as MP4 files.
 
-- **Modern UI**
-  - Dark/Light theme toggle
-  - Tabbed interface (Detection, Visuals, Project)
-  - Resizable panels
-  - Custom color picker with HSV gradient
+## 🛠️ Requirements
 
-## Installation
+BlobTrack is built with Python and utilizes industry-standard libraries:
+- **Python 3.8+**
+- **OpenCV** (`opencv-python`)
+- **PyQt6**
+- **NumPy**
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/BlobTrackCv.git
-cd BlobTrackCv
+## 📦 Installation
 
-# Create virtual environment
-python -m venv venv
+We provide an easy installation script to get you up and running quickly.
 
-# Activate (Windows)
-source venv/Scripts/activate  # Git Bash
-# OR
-.\venv\Scripts\activate  # PowerShell
+### Automatic Installation (Recommended)
 
-# Install dependencies
-pip install -r requirements.txt
-```
-
-## Usage
+**Windows (Git Bash recommended) / macOS / Linux:**
+Run the included install script to automatically create a virtual environment and install all dependencies.
 
 ```bash
-python main.py
+./install.sh
 ```
 
-1. Click **Select Video** in the Project tab
-2. Adjust detection parameters in the **Detection** tab
-3. Customize visuals in the **Visuals** tab
-4. Export processed video when ready
+### Manual Installation
 
-## Project Structure
+If you prefer to set it up manually:
 
-```
-BlobTrackCv/
-├── main.py                 # Application entry point
-├── requirements.txt        # Python dependencies
-├── src/
-│   ├── core/              # Core processing logic
-│   │   ├── tracking.py    # Blob detection & centroid tracking
-│   │   ├── video_processor.py
-│   │   └── enums.py
-│   ├── ui/                # User interface
-│   │   ├── main_window.py
-│   │   ├── themes.py
-│   │   └── widgets/       # Reusable UI components
-│   ├── visuals/           # Visualization strategies
-│   │   ├── core.py        # Visualizer class
-│   │   └── strategies.py  # Color, Shape, Text strategies
-│   └── assets/            # Icons and images
-└── venv/                  # Virtual environment
-```
+1. **Create a Virtual Environment:**
+   ```bash
+   python -m venv venv
+   ```
 
-## Controls
+2. **Activate the Environment:**
+   - **Windows:** `source venv/Scripts/activate` (Git Bash) or `venv\Scripts\activate` (CMD/PowerShell)
+   - **Mac/Linux:** `source venv/bin/activate`
 
-| Key | Action |
-|-----|--------|
-| `Space` | Play/Pause |
-| `D` | Toggle Debug Mode |
-| Drag Slider | Seek through video |
+3. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## License
+## 🎮 Usage
+
+1. **Launch the Application**:
+   ```bash
+   source venv/Scripts/activate && python main.py
+   ```
+   *(Note: On Windows PowerShell, use `.\venv\Scripts\activate`)*
+
+2. **Select Video**: Click **"Select Video File"** to load your source footage.
+
+3. **Tweak Settings**: 
+   - Use the **Detection** tab to isolate the shapes you want.
+   - Use the **Visuals** tab to apply colors, shapes, and effects.
+
+4. **Export**: Once you're happy with the look, click **"Export Processed Video"**. 
+
+## 📝 License
 
 WTFPL License - See [LICENSE](LICENSE) for details.
 
-## Author
+In short : Do whatever you want.
+
+## 🥳 Author
 
 Built with ❤️ using Python, OpenCV, and PyQt6.
+
+For all questions, suggestions, or bug reports, please open an issue on GitHub.
+
