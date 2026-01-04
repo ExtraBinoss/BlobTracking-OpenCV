@@ -31,14 +31,16 @@ class CycleColorStrategy(ColorStrategy):
 
 class SolidColorStrategy(ColorStrategy):
     def __init__(self, color=(255, 255, 255)):
-        self.color = color
+        # Convert RGB to BGR for OpenCV
+        self.color = (color[2], color[1], color[0])
     
     def get_color(self, object_id, frame_idx):
         return self.color
 
 class BreatheColorStrategy(ColorStrategy):
     def __init__(self, base_color=(67, 160, 71), speed=50, intensity=75):
-        self.base_color = base_color
+        # Convert RGB to BGR for OpenCV
+        self.base_color = (base_color[2], base_color[1], base_color[0])
         self.speed = speed
         self.intensity = intensity
     

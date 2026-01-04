@@ -102,7 +102,11 @@ class VideoProcessor(QThread):
         # Tracer Settings
         visualizer.trace_thickness = settings.get("trace_thickness", 3)
         visualizer.trace_lifetime = settings.get("trace_lifetime", 20)
-        visualizer.trace_color = settings.get("trace_color", None)
+        trace_rgb = settings.get("trace_color", None)
+        if trace_rgb:
+            visualizer.trace_color = (trace_rgb[2], trace_rgb[1], trace_rgb[0])  # RGB to BGR
+        else:
+            visualizer.trace_color = None
         
         # Limits
         visualizer.max_blobs = settings.get("max_blobs", 50)
