@@ -270,7 +270,7 @@ class VideoProcessor(QThread):
                 if self.debug_mode: # If debugging during export, re-draw "clean" for export?
                      # For now, export what is seen or force clean. 
                      # Usually export is clean.
-                     clean_frame = visualizer.draw(frame, objects, shape=self.shape_type, frame_idx=frame_idx)
+                     clean_frame = visualizer.draw(frame, objects, shape_type=self.shape_type, frame_idx=frame_idx)
                      out.write(clean_frame)
                 else:
                     out.write(out_frame)
@@ -289,7 +289,8 @@ class VideoProcessor(QThread):
             out.release()
             
         if not self.is_preview:
-            self.finished.emit(f"Processing complete! Saved to {output_path}")
+            filename = os.path.basename(output_path)
+            self.finished.emit(f"Processing complete! Saved as {filename}")
 
     def stop(self):
         self.is_running = False

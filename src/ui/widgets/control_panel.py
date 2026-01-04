@@ -27,7 +27,15 @@ class ControlPanel(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         
         self.tabs = QTabWidget()
+        self.tabs = QTabWidget()
         main_layout.addWidget(self.tabs)
+        
+        # Status Label
+        self.status_label = QLabel("")
+        self.status_label.setStyleSheet("color: #81c784; font-weight: bold; margin: 5px;")
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setWordWrap(True)
+        main_layout.addWidget(self.status_label)
         
         # --- TAB 1: DETECTION (with scroll) ---
         self.tab_detect_scroll = QScrollArea()
@@ -411,8 +419,12 @@ class ControlPanel(QWidget):
              folder = os.path.dirname(export_path)
              
         # OS Agnostic Open
+         # OS Agnostic Open
         if os.name == 'nt':
-            subprocess.Popen(['explorer', folder])
+            try:
+                os.startfile(folder)
+            except Exception as e:
+                print(f"Error opening folder: {e}")
         elif os.name == 'posix':
             subprocess.Popen(['xdg-open', folder])
         else:

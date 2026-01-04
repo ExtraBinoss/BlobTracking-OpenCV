@@ -1,6 +1,6 @@
 import os
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QToolBar, 
-                             QSizePolicy, QLabel, QSplitter)
+                             QSizePolicy, QLabel, QSplitter, QProgressDialog)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QIcon
 from src.core.video_processor import VideoProcessor
@@ -131,11 +131,35 @@ class MainWindow(QMainWindow):
         self.control_panel.emit_params()
         self.control_panel.emit_visuals()
         
-        self.processor.finished.connect(lambda msg: self.video_player.set_status_message(msg))
-        # We could add a progress dialog here.
+        # Progress Dialog (Detailed)
+        progress = QProgressDialog("Initializing Export...", "Stop", 0, 100, self)
+        progress.setWindowTitle("Exporting Video")
+        progress.setWindowModality(Qt.WindowModality.ApplicationModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+        
+        # Connections
+        progress.canceled.connect(self.processor.stop)
+        
+        # Dynamic progress update
+        def handle_duration(total):
+            progress.setMaximum(total)
+            progress.setLabelText(f"Processing Frame 0/{total}")
+
+        def handle_frame(current):
+            progress.setValue(current)
+            total = progress.maximum()
+            if total > 0:
+                progress.setLabelText(f"Processing Frame {current}/{total}")
+
+        self.processor.duration_changed.connect(handle_duration)
+        self.processor.current_frame_changed.connect(handle_frame)
+        self.processor.finished.connect(progress.close)
+        
+        # Output to Control Panel Status Label
+        self.processor.finished.connect(lambda msg: self.control_panel.status_label.setText(msg))
         
         self.processor.start()
-        self.video_player.set_status_message("Exporting...")
 
     def update_processor_params(self, params):
         if self.processor:

@@ -204,6 +204,20 @@ class ThemeManager:
             /* Removed transform */
         }
 
+        /* PROGRESS BAR */
+        QProgressBar {
+            background-color: #2c2c2c;
+            border: 1px solid #3d3d3d;
+            border-radius: 4px;
+            text-align: center;
+            color: white;
+            height: 12px;
+        }
+        QProgressBar::chunk {
+            background-color: #66bb6a;
+            border-radius: 3px;
+        }
+
         /* LABELS & INPUTS */
         QLabel {
             color: #ccc;
